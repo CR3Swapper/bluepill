@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bluepill", "bluepill.vcxproj", "{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x64.ActiveCfg = Release|x64
+		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x64.Build.0 = Release|x64
+		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x64.Deploy.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {22636420-0DC7-4CDD-8C4B-01D117B2C331}
+	EndGlobalSection
+EndGlobal
