@@ -28,4 +28,14 @@ readcs proc
 	mov rax, cs
 	ret
 readcs endp
+
+readtr proc
+	str ax
+	ret
+readtr endp
+
+readldt proc
+	sldt ax
+	ret
+readldt endp
 end

@@ -56,6 +56,8 @@
   <ItemGroup>
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="exit_handler.cpp" />
+    <ClCompile Include="segment.cpp" />
+    <ClCompile Include="vmcs.cpp" />
     <ClCompile Include="vmxlaunch.cpp" />
     <ClCompile Include="vmxon.cpp" />
   </ItemGroup>
@@ -63,6 +65,7 @@
     <ClInclude Include="ia32.hpp" />
     <ClInclude Include="segment_intrin.h" />
     <ClInclude Include="hv_types.hpp" />
+    <ClInclude Include="vmcs.hpp" />
     <ClInclude Include="vmxexit_handler.h" />
     <ClInclude Include="vmxlaunch.hpp" />
     <ClInclude Include="vmxon.hpp" />

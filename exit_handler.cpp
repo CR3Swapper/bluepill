@@ -19,6 +19,6 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	case VMX_EXIT_REASON_EXECUTE_VMCLEAR:
 	case VMX_EXIT_REASON_EXECUTE_RDTSC:
 	default:
-		__vmx_off();
+		break;
 	}
 }

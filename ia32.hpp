@@ -9936,6 +9936,7 @@ typedef union
 #define IA32_VMX_BASIC                                               0x00000480
 typedef union
 {
+    uint64_t flags;
     struct
     {
         /**
@@ -10054,8 +10055,6 @@ typedef union
 #define IA32_VMX_BASIC_VMX_CONTROLS(_)                               (((_) >> 55) & 0x01)
         uint64_t reserved2 : 8;
     };
-
-    uint64_t flags;
 } ia32_vmx_basic_register;
 
 
@@ -10069,6 +10068,7 @@ typedef union
 #define IA32_VMX_PINBASED_CTLS                                       0x00000481
 typedef union
 {
+    uint64_t flags;
     struct
     {
         /**
@@ -10144,8 +10144,6 @@ typedef union
 #define IA32_VMX_PINBASED_CTLS_PROCESS_POSTED_INTERRUPTS(_)          (((_) >> 7) & 0x01)
         uint64_t reserved3 : 56;
     };
-
-    uint64_t flags;
 } ia32_vmx_pinbased_ctls_register;
 
 
@@ -15458,7 +15456,7 @@ typedef struct
              * [Bits 7:0] Base address field (23:16); see description of $BASE_LOW for more details.
              */
             uint32_t base_address_middle : 8;
-#define SEGMENT__BASE_ADDRESS_MIDDLE_BIT                             0
+#define SEGMENT__BASE_ADDRESS_MIDDLE_BIT                             16
 #define SEGMENT__BASE_ADDRESS_MIDDLE_FLAG                            0xFF
 #define SEGMENT__BASE_ADDRESS_MIDDLE_MASK                            0xFF
 #define SEGMENT__BASE_ADDRESS_MIDDLE(_)                              (((_) >> 0) & 0xFF)
@@ -15611,6 +15609,7 @@ typedef struct
      * Base address field (32:63); see description of $BASE_LOW for more details.
      */
     uint32_t base_address_upper;
+#define SEGMENT__BASE_ADDRESS_SHIFT 32
 
     /**
      * Base address field (32:63); see description of $BASE_LOW for more details.
@@ -15844,6 +15843,8 @@ typedef struct
                                      */
 typedef union
 {
+    uint16_t flags;
+
     struct
     {
         /**
@@ -15879,8 +15880,6 @@ typedef union
 #define SEGMENT_SELECTOR_INDEX_MASK                                  0x1FFF
 #define SEGMENT_SELECTOR_INDEX(_)                                    (((_) >> 3) & 0x1FFF)
     };
-
-    uint16_t flags;
 } segment_selector;
 
 /**

@@ -95,11 +95,14 @@ namespace vmxon
 		hv::cr0_t cr0 = { 0 };
 		hv::cr4_t cr4 = { 0 };
 
+		// should check to see if this is locked or not...
 		feature_msr.control = __readmsr(IA32_FEATURE_CONTROL);
 		feature_msr.bits.vmxon_outside_smx = true;
 		feature_msr.bits.lock = true;
 		__writemsr(IA32_FEATURE_CONTROL, feature_msr.control);
 
+		// not sure if did this in the wrong order, i think maybe cr4.vmx_enable bit needs
+		// to be flipped before i fixed cr0 and cr4 registers? TODO: read up on dat sheet...
 		cr_fixed.all = __readmsr(IA32_VMX_CR0_FIXED0);
 		cr0.flags = __readcr0();
 		cr0.flags |= cr_fixed.split.low;
@@ -118,17 +121,10 @@ namespace vmxon
 		cr4.vmx_enable = true;
 		__writecr4(cr4.flags);
 
-		__try
-		{
-			DBG_PRINT("vmxon for processor: %d\n", KeGetCurrentProcessorNumber());
-
+		DBG_PRINT("vmxon for processor: %d\n", KeGetCurrentProcessorNumber());
+		DBG_PRINT("		- vmxon result (0 == success): %d\n",
 			__vmx_on((unsigned long long*)
 				&vmxon::g_vmx_ctx->vcpus[
-					KeGetCurrentProcessorNumber()]->vmxon_phys);
-		}
-		__except (EXCEPTION_EXECUTE_HANDLER)
-		{
-			DBG_PRINT("vmxon failed for processor: %d\n", KeGetCurrentProcessorNumber());
-		}
+					KeGetCurrentProcessorNumber()]->vmxon_phys));
 	}
 }

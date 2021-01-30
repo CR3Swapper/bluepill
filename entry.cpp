@@ -53,7 +53,7 @@ auto driver_entry(
 	KeIpiGenericCall((PKIPI_BROADCAST_WORKER)&vmxlaunch::init_vmcs, NULL);
 
 	// vmxlaunch for all cores...
-	// KeIpiGenericCall((PKIPI_BROADCAST_WORKER)&vmxlaunch::launch, NULL);
+	KeIpiGenericCall((PKIPI_BROADCAST_WORKER)&vmxlaunch::launch, NULL);
 
 	driver_object->DriverUnload = &driver_unload;
 	return STATUS_SUCCESS;

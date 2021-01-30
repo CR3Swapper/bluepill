@@ -14,6 +14,11 @@ using s16 = short;
 using s32 = int;
 using s64 = long long;
 
+// didnt find it in intrin.h... ?
+extern "C" void _sgdt(void*);
+#pragma intrinsic(_sgdt);
+
+
 #define DBG_PRINT(...) DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, "[hv]" __VA_ARGS__)
 #define HOST_STACK_PAGES 6
 
@@ -378,4 +383,11 @@ namespace hv
 		u32 vcpu_num;
 		pvcpu_ctx* vcpus;
 	} vmx_ctx, *pvmx_ctx;
+
+	typedef struct _segment_info_ctx
+	{
+		vmx_segment_access_rights rights;
+		u64 limit;
+		u64 base_addr;
+	} segment_info_ctx, *psegment_info_ctx;
 }

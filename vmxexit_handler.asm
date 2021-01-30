@@ -2,6 +2,7 @@ extern exit_handler : proc
 
 .code
 vmxexit_handler proc
+	int 3 ; see if vmexit get called...
 	push rax
 	push rbx
 	push rcx
@@ -38,9 +39,9 @@ vmxexit_handler proc
 	movaps [rsp + 0F0h], xmm15
 
 	mov rcx, rsp
-	sub rsp, 28h ; shadow space or some shit MSVC does it so i do it...
+	sub rsp, 20h
 	call exit_handler
-	add rsp, 28h
+	add rsp, 20h
 
 	movaps xmm0, [rsp]
 	movaps xmm1, [rsp + 010h]
@@ -76,6 +77,6 @@ vmxexit_handler proc
 	pop rcx
 	pop rax
 
-	vmresume ; resume guest execution...
+	vmresume
 vmxexit_handler endp
 end
