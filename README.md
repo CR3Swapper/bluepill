@@ -10,5 +10,5 @@ This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 
 ### VMCS
 
-Dump of VMCS fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS.md). This is not required, but for learning its nice to
-see exactly what the masks are, what VMCS field's there are and what exactly you need to vmxlaunch successfully.
+Dump of VMCS control fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS.md). This is not required, but for learning its nice to
+see exactly what the MSR masks are, and what VMCS field's there are.
