@@ -1,6 +1,5 @@
 <p align="center">
   <img src="https://imgur.com/b1bYNZU.png"/>
-<center>Figure 1. First vmexit...</center>
 </p>
 
 # Bluepill
