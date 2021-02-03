@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://imgur.com/b1bYNZU.png"/>
+  <img width="600" height="auto" src="https://imgur.com/b1bYNZU.png"/>
 </p>
 
 # Bluepill
 
-An Intel research hypervisor written with no access to github.com
+An Intel type-2 research hypervisor written with no access to github.com. This project is purely for educational purposes. 
 
 ### VMCS
 
