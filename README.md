@@ -66,6 +66,9 @@ debug print of vmcs control fields after reserved bits are set high and low.
 			- IA32_VMX_TRUE_ENTRY_CTLS low bits mask: 0x11fb
 ```
 
+IA32_VMX_TRUE_ENTRY_CTLS high bits: 0b1111001111111111‬
+IA32_VMX_TRUE_ENTRY_CTLS low bits:  0b0001000111111011
+
 #### vm-exit controls
 
 ```
