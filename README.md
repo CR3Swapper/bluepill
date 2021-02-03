@@ -14,7 +14,7 @@
 			- IA32_VMX_TRUE_PINBASED_CTLS low bits mask: 0x16
 ```
 
-(overlapping bits in the mask just mean that the bit can be high or low)
+(different bits in the mask just mean that the bit can be high or low)
 
 ```
 IA32_VMX_TRUE_PINBASED_CTLS high bits mask: 0b00111111 // these bits can be high
@@ -51,7 +51,7 @@ IA32_VMX_TRUE_PINBASED_CTLS low bits mask:  0b00010110 // these bits can be low
 			- IA32_VMX_TRUE_PROCBASED_CTLS low bits mask: 0x4006172
 ```
 
-(overlapping bits in the mask just mean that the bit can be high or low)
+(different bits in the mask just mean that the bit can be high or low)
 
 ```
 IA32_VMX_TRUE_PROCBASED_CTLS high bits mask: 0b11111111111110011111111111111110 // these bits can be high
