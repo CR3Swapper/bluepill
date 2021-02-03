@@ -1,7 +1,5 @@
 # when in doubt, print shit out
 
-debug print of vmcs control fields after reserved bits are set high and low.
-
 #### pinbased vm-exit controls
 
 ```
