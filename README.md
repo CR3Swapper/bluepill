@@ -1,8 +1,4 @@
-# bluepill
-
-Taking the easy way out, choosing to ignore the harsh reality and live in blissful ignorance. 
-
-### when in doubt, print it out
+# when in doubt, print it out
 
 debug print of vmcs control fields after reserved bits are set high and low.
 
