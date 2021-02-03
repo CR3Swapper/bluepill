@@ -1,8 +1,10 @@
 # intel processor info
 
+```
 Processors: (two xeon cpus)
     Processor	Intel(R) Xeon(R) CPU           X5650  @ 2.67GHz, 2668 Mhz, 6 Core(s), 12 Logical Processor(s)
     Processor	Intel(R) Xeon(R) CPU           X5650  @ 2.67GHz, 2668 Mhz, 6 Core(s), 12 Logical Processor(s)
+```
     
 # VMCS - Control Fields
 
