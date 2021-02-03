@@ -5,7 +5,8 @@
 
 # Bluepill
 
-An Intel type-2 research hypervisor written with no access to github.com. This project is purely for educational purposes. 
+Bluepill is an Intel type-2 research hypervisor written with no access to github.com. This project is purely for educational purposes and is designed to run on Windows 10 systems.
+This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 
 ### VMCS
 
