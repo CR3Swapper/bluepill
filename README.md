@@ -27,10 +27,7 @@ procbased_ctls2.conceal_vmx_from_pt = true;
 __vmx_vmwrite(VMCS_CTRL_SECONDARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls2.flags);
 ```
 
-This was causing vmxerror #7 (control field misconfiguration). Also I found out my xeons dont support xsave, nor do they 
-support [processor tracing](https://software.intel.com/content/www/us/en/develop/blogs/processor-tracing.html).
-
-Instead set bits high before you apply the mask... brutal.
+Instead set bits high before you apply the mask...
 
 ```cpp
 msr_fix_value.flags = __readmsr(IA32_VMX_PROCBASED_CTLS2);
