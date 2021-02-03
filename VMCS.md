@@ -1,4 +1,4 @@
-# intel processor info
+# Intel Processor Info
 
 ```
 Processors: (two xeon cpus)
@@ -8,7 +8,7 @@ Processors: (two xeon cpus)
     
 # VMCS - Control Fields
 
-#### pinbased vm-exit controls
+#### Pinbased VM-Exit Controls
 
 ```
 ============================== pinbased vm-exit controls ==============================
@@ -29,7 +29,7 @@ IA32_VMX_TRUE_PINBASED_CTLS high bits mask: 0b00111111
 IA32_VMX_TRUE_PINBASED_CTLS low bits mask:  0b00010110 
 ```
 
-#### processor based vm-exit controls
+#### Processor Based VM-Exit Controls
 
 ```
 ============================== processor based vm-exit controls ==============================
@@ -66,7 +66,7 @@ IA32_VMX_TRUE_PROCBASED_CTLS high bits mask: 0b11111111111110011111111111111110
 IA32_VMX_TRUE_PROCBASED_CTLS low bits mask:  0b00000100000000000110000101110010 
 ```
 
-#### vm-entry controls
+#### VM-Entry Controls
 
 ```
 ============================== vm-entry controls ==============================
@@ -93,7 +93,7 @@ IA32_VMX_TRUE_ENTRY_CTLS high bits: 0b1111001111111111‬
 IA32_VMX_TRUE_ENTRY_CTLS low bits:  0b0001000111111011
 ```
 
-#### vm-exit controls
+#### VM-Exit Controls
 
 ```
 ============================== vm-exit controls ==============================
@@ -121,7 +121,7 @@ IA32_VMX_TRUE_EXIT_CTLS high bits mask: 0b001111111111111111111111
 IA32_VMX_TRUE_EXIT_CTLS low bits mask:  0b000000110110110111111011
 ```
 
-#### secondary processor based vm-exec controls
+#### Secondary Processor Based VM-Exec Controls
 
 ```
 ============================== secondary processor based vm-exec controls ==============================
