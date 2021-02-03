@@ -10,7 +10,6 @@ vmxexit_handler proc
 	push rsi
 	push rdi
 	push rbp
-	push rbp ; gotta keep the stack aligned...
 	push r8
 	push r9
 	push r10
@@ -69,7 +68,6 @@ vmxexit_handler proc
 	pop r10
 	pop r9
 	pop r8
-	pop rbp ; gotta keep the stack aligned...
 	pop rbp 
 	pop rdi
 	pop rsi

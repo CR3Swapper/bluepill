@@ -72,11 +72,17 @@ namespace vmxon
 				reinterpret_cast<hv::pvcpu_ctx>(
 					ExAllocatePool(NonPagedPool, sizeof hv::vcpu_ctx));
 
+			// allocate host stack...
 			vmx_ctx->vcpus[idx]->host_stack = 
 				reinterpret_cast<u64>(
 					ExAllocatePool(NonPagedPool,
 						PAGE_SIZE * HOST_STACK_PAGES));
 
+			// zero host stack...
+			RtlZeroMemory(reinterpret_cast<void*>(
+				vmx_ctx->vcpus[idx]->host_stack), PAGE_SIZE * HOST_STACK_PAGES);
+
+			// setup VMCS and VMXON region...
 			create_vmxon_region(vmx_ctx->vcpus[idx]);
 			create_vmcs(vmx_ctx->vcpus[idx]);
 
@@ -85,6 +91,7 @@ namespace vmxon
 			DBG_PRINT("		- vmxon region (physical): 0x%p\n", vmx_ctx->vcpus[idx]->vmxon_phys);
 			DBG_PRINT("		- vmcs (virtual): 0x%p\n", vmx_ctx->vcpus[idx]->vmcs);
 			DBG_PRINT("		- vmcs (physical): 0x%p\n", vmx_ctx->vcpus[idx]->vmcs_phys);
+			DBG_PRINT("		- host stack: 0x%p\n", vmx_ctx->vcpus[idx]->host_stack);
 		}
 	}
 
@@ -95,7 +102,7 @@ namespace vmxon
 		hv::cr0_t cr0 = { 0 };
 		hv::cr4_t cr4 = { 0 };
 
-		// should check to see if this is locked or not...
+		// TODO: should check to see if this is locked or not...
 		feature_msr.control = __readmsr(IA32_FEATURE_CONTROL);
 		feature_msr.bits.vmxon_outside_smx = true;
 		feature_msr.bits.lock = true;
@@ -117,14 +124,17 @@ namespace vmxon
 		cr4.flags &= cr_fixed.split.low;
 		__writecr4(cr4.flags);
 
+		// enable vmx instructions on this core...
 		cr4.flags = __readcr4();
 		cr4.vmx_enable = true;
 		__writecr4(cr4.flags);
 
-		DBG_PRINT("vmxon for processor: %d\n", KeGetCurrentProcessorNumber());
-		DBG_PRINT("		- vmxon result (0 == success): %d\n",
+		const auto vmxon_result = 
 			__vmx_on((unsigned long long*)
 				&vmxon::g_vmx_ctx->vcpus[
-					KeGetCurrentProcessorNumber()]->vmxon_phys));
+					KeGetCurrentProcessorNumber()]->vmxon_phys);
+
+		DBG_PRINT("vmxon for processor: %d\n", KeGetCurrentProcessorNumber());
+		DBG_PRINT("		- vmxon result (0 == success): %d\n", vmxon_result);
 	}
 }

@@ -18,29 +18,18 @@ using s64 = long long;
 extern "C" void _sgdt(void*);
 #pragma intrinsic(_sgdt);
 
+#ifdef DBG_PRINT_BOOL
+#define DBG_PRINT(format, ...) DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, "[hv [core number = %d]]" format, KeGetCurrentProcessorNumber(), __VA_ARGS__)
+#else
+#define DBG_PRINT(format, ...)
+#endif
 
-#define DBG_PRINT(...) DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, "[hv]" __VA_ARGS__)
 #define HOST_STACK_PAGES 6
 
 namespace hv
 {
 	typedef struct _guest_registers
 	{
-		u64 r15;
-		u64 r14;
-		u64 r13;
-		u64 r12;
-		u64 r11;
-		u64 r10;
-		u64 r9;
-		u64 r8;
-		u64 rbp;
-		u64 rdi;
-		u64 rsi;
-		u64 rdx;
-		u64 rcx;
-		u64 rax;
-
 		u128 xmm0;
 		u128 xmm1;
 		u128 xmm2;
@@ -57,6 +46,21 @@ namespace hv
 		u128 xmm13;
 		u128 xmm14;
 		u128 xmm15;
+
+		u64 r15;
+		u64 r14;
+		u64 r13;
+		u64 r12;
+		u64 r11;
+		u64 r10;
+		u64 r9;
+		u64 r8;
+		u64 rbp;
+		u64 rdi;
+		u64 rsi;
+		u64 rdx;
+		u64 rcx;
+		u64 rax;
 	} guest_registers, * pguest_registers;
 
 	union ia32_efer_t
