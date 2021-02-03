@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="https://imgur.com/b1bYNZU.png"/>
+Figure 1. First vmexit...
+</p>
+
 # Bluepill
 
 An Intel research hypervisor written with no access to github.com
