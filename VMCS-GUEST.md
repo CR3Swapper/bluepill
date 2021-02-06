@@ -13,7 +13,7 @@ Processors: (two xeon cpus)
 ##### Checks on Guest Control Registers
 
 * The CR0 field must not set any bit to a value not supported in VMX operation (see Section 23.8). The following
-are exceptions:
+are exceptions: :white_check_mark:
 
     - Bit 0 (corresponding to CR0.PE) and bit 31 (PG) are not checked if the “unrestricted guest” VM-execution
 control is 1.
@@ -27,7 +27,7 @@ not changed by VM entry; see Section 26.3.2.1.
 bit 5 in the CR4 field (corresponding to CR4.PAE) must each be 1. :white_check_mark:
 
     - If the “IA-32e mode guest” VM-entry control is 0, bit 17 in the CR4 field (corresponding to CR4.PCIDE)
-must be 0.
+must be 0. (this value is one in my entry controls) :white_check_mark:
 
     - The CR3 field must be such that bits 63:52 and bits in the range 51:32 beyond the processor’s physicaladdress
 width are 0. :white_check_mark:
