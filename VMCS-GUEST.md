@@ -8,7 +8,9 @@ Processors: (two xeon cpus)
 
 # VMCS - Guest Fields
 
-#### Control Registers
+#### 26.3.1.1 Checks on Guest Control Registers, Debug Registers, and MSRs
+
+##### Checks on Guest Control Registers
 
 * The CR0 field must not set any bit to a value not supported in VMX operation (see Section 23.8). The following
 are exceptions:
@@ -30,8 +32,20 @@ must be 0.
     - The CR3 field must be such that bits 63:52 and bits in the range 51:32 beyond the processor’s physicaladdress
 width are 0. :white_check_mark:
 
+* The CR4 field must not set any bit to a value not supported in VMX operation (see Section 23.8). :white_check_mark:
+
 ```
 guest cr0: 0x0000000080050033 0b1000 0000 0000 0101 0000 0000 0011 0011
 guest cr3: 0x00000000001AD000
 guest cr4: 0x00000000000026F8 0b0010 0110 1111 1000
 ```
+
+##### Checks on Guest MSRs
+
+* If the “load debug controls” VM-entry control is 1, bits reserved in the IA32_DEBUGCTL MSR must be 0 in the
+field for that register. The first processors to support the virtual-machine extensions supported only the 1-
+setting of this control and thus performed this check unconditionally.
+
+
+
+#### 26.3.1.2 Checks on Guest Segment Registers
