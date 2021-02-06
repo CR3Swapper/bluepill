@@ -10,7 +10,7 @@ This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 
 ### VMCS
 
-This section of the readme just contains note and a list of things i stumbled on and took me a while to figure out and fix.
+This section of the readme just contains notes and a list of things I stumbled on and took me a while to figure out and fix.
 
 ### VMCS Controls
 
