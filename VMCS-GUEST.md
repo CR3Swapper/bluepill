@@ -22,7 +22,7 @@ not changed by VM entry; see Section 26.3.2.1.
 * The following checks are performed on processors that support Intel 64 architecture:
 
     - If the “IA-32e mode guest” VM-entry control is 1, bit 31 in the CR0 field (corresponding to CR0.PG) and
-bit 5 in the CR4 field (corresponding to CR4.PAE) must each be 1.
+bit 5 in the CR4 field (corresponding to CR4.PAE) must each be 1. :check:
 
     - If the “IA-32e mode guest” VM-entry control is 0, bit 17 in the CR4 field (corresponding to CR4.PCIDE)
 must be 0.
