@@ -107,6 +107,7 @@ fs selector: 0x0000000000000053
 		- fs.request_privilege_level: 3
 		- fs.table: 0
 fs base address: 0x0000000000000000
+fs base (from readmsr): 0x0000000000000000
 fs limit: 0x0000000000003C00
 fs rights: 0x00000000000040F3
 		- fs_rights.available_bit: 0
@@ -125,6 +126,7 @@ gs selector: 0x000000000000002B
 		- gs.request_privilege_level: 3
 		- gs.table: 0
 gs base address: 0x0000000000000000
+gs base (from readmsr): 0xFFFFF80365406000
 gs limit: 0x00000000FFFFFFFF
 gs rights: 0x000000000000C0F3
 		- gs_rights.available_bit: 0
@@ -226,7 +228,4 @@ ldt rights: 0x000000000000008B
 		- ldt_rights.present: 1
 		- ldt_rights.type: 11
 		- ldt_rights.unusable: 0
-		
-guest gs base (from readmsr): 0xFFFFF80365406000
-guest fs base (from readmsr): 0x0000000000000000
 ```
