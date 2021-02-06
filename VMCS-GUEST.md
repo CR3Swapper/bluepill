@@ -19,6 +19,17 @@ control is 1.
     - Bit 29 (corresponding to CR0.NW) and bit 30 (CD) are never checked because the values of these bits are
 not changed by VM entry; see Section 26.3.2.1.
 
+* The following checks are performed on processors that support Intel 64 architecture:
+
+    - If the “IA-32e mode guest” VM-entry control is 1, bit 31 in the CR0 field (corresponding to CR0.PG) and
+bit 5 in the CR4 field (corresponding to CR4.PAE) must each be 1.
+
+    - If the “IA-32e mode guest” VM-entry control is 0, bit 17 in the CR4 field (corresponding to CR4.PCIDE)
+must be 0.
+
+    - The CR3 field must be such that bits 63:52 and bits in the range 51:32 beyond the processor’s physicaladdress
+width are 0.
+
 ```
 guest cr0: 0x0000000080050033 0b1000 0000 0000 0101 0000 0000 0011 0011
 guest cr3: 0x00000000001AD000
