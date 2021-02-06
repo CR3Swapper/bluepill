@@ -45,6 +45,16 @@ guest cr4: 0x00000000000026F8 0b0010 0110 1111 1000
 * If the “load debug controls” VM-entry control is 1, bits reserved in the IA32_DEBUGCTL MSR must be 0 in the
 field for that register. (this is not set in vm entry control fields in my vmcs...) :white_check_mark:
 
+* The IA32_SYSENTER_ESP field and the IA32_SYSENTER_EIP field must each contain a canonical address. (this is MSR is zero) :white_check_mark:
+
+"In 64-bit mode, an address is considered to be in canonical form if address bits 63 through to the most-significant implemented bit by the microarchitecture are set to either all ones or all zeros..."
+
+```
+VMCS_GUEST_DEBUGCTL: 0x0000000000000000
+VMCS_GUEST_SYSENTER_CS: 0x0000000000000000
+VMCS_GUEST_SYSENTER_EIP: 0x0000000000000000
+VMCS_GUEST_SYSENTER_ESP: 0x0000000000000000
+```
 
 #### 26.3.1.2 Checks on Guest Segment Registers
 
