@@ -67,11 +67,13 @@ This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, 
     - SS. If the guest will not be virtual-8086 and the “unrestricted guest” VM-execution control is 0, the RPL
 (bits 1:0) must equal the RPL of the selector field for CS.
 
+
 * Base-address fields.
 
     - TR, FS, GS. The address must be canonical.
     - CS. Bits 63:32 of the address must be zero.
     - SS, DS, ES. If the register is usable, bits 63:32 of the address must be zero.
+    
     
 * Access-rights fields for CS, SS, DS, ES, FS, GS.
 
