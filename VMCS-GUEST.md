@@ -43,9 +43,9 @@ guest cr4: 0x00000000000026F8 0b0010 0110 1111 1000
 ##### Checks on Guest MSRs
 
 * If the “load debug controls” VM-entry control is 1, bits reserved in the IA32_DEBUGCTL MSR must be 0 in the
-field for that register. The first processors to support the virtual-machine extensions supported only the 1-
-setting of this control and thus performed this check unconditionally.
-
+field for that register. (this is not set in vm entry control fields in my vmcs...) :white_check_mark:
 
 
 #### 26.3.1.2 Checks on Guest Segment Registers
+
+This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, and LDTR.
