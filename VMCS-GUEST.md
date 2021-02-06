@@ -28,7 +28,7 @@ bit 5 in the CR4 field (corresponding to CR4.PAE) must each be 1. :white_check_m
 must be 0.
 
     - The CR3 field must be such that bits 63:52 and bits in the range 51:32 beyond the processor’s physicaladdress
-width are 0.
+width are 0. :white_check_mark:
 
 ```
 guest cr0: 0x0000000080050033 0b1000 0000 0000 0101 0000 0000 0011 0011
