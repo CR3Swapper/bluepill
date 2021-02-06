@@ -12,7 +12,7 @@ This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 
 This section of the readme just contains notes and a list of things I stumbled on and took me a while to figure out and fix.
 
-### VMCS Controls
+##### VMCS Controls
 
 * One of the mistakes I made early on was setting bits high after applying high/low MSR values. For example my xeons dont support Intel Processor Trace (Intel PT) and I was setting `entry_ctls.conceal_vmx_from_pt = true` after applying the MSR high/low masks. This caused vmxerror #7 (invalid vmcs controls). Now i set the bit high before i apply the high/low bit mask so if my hypervisor runs on a cpu that has Intel PT support it will be concealed from Intel PT.
 * My xeons also dont support xsave/xrstor and I was setting enable_xsave in secondary processor based vmexit controls after applying `IA32_VMX_PROCBASED_CTLS2` high/low bitmask. Which caused vmxerror #7 (invalid vmcs controls).
