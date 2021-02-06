@@ -71,7 +71,16 @@ This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, 
 
     - TR, FS, GS. The address must be canonical.
     - CS. Bits 63:32 of the address must be zero.
+    - SS, DS, ES. If the register is usable, bits 63:32 of the address must be zero.
+    
+* Access-rights fields for CS, SS, DS, ES, FS, GS.
 
+    - CS Bits 3:0 (Type): must be 9, 11, 13, or 15 (accessed code segment).
+    - SS. If SS is usable, the Type must be 3 or 7 (read/write, accessed data segment).
+    - DS, ES, FS, GS. The following checks apply if the register is usable
+        - Bit 0 of the Type must be 1 (accessed).
+        - If bit 3 of the Type is 1 (code segment), then bit 1 of the Type must be 1 (readable).
+    - Bit 4 (S). If the register is CS or if the register is usable, S must be 1
 ```
 es selector: 0x000000000000002B
 es base address: 0x0000000000000000
