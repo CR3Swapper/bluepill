@@ -59,3 +59,111 @@ VMCS_GUEST_SYSENTER_ESP: 0x0000000000000000
 #### 26.3.1.2 Checks on Guest Segment Registers
 
 This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, and LDTR.
+
+* Selector fields.
+
+    - TR. The TI flag (bit 2) must be 0.
+    - LDTR. If LDTR is usable, the TI flag (bit 2) must be 0. (windows does not use LDT!)...
+    - SS. If the guest will not be virtual-8086 and the “unrestricted guest” VM-execution control is 0, the RPL
+(bits 1:0) must equal the RPL of the selector field for CS.
+
+* Base-address fields.
+
+    - TR, FS, GS. The address must be canonical.
+    - CS. Bits 63:32 of the address must be zero.
+
+```
+es selector: 0x000000000000002B
+es base address: 0x0000000000000000
+es limit: 0x00000000FFFFFFFF
+es rights: 0x000000000000C0F3
+		- es_rights.available_bit: 0
+		- es_rights.default_big: 1
+		- es_rights.descriptor_privilege_level: 3
+		- es_rights.descriptor_type: 1
+		- es_rights.granularity: 1
+		- es_rights.long_mode: 0
+		- es_rights.present: 1
+		- es_rights.type: 3
+		- es_rights.unusable: 0
+fs selector: 0x0000000000000053
+fs base address: 0x0000000000000000
+fs limit: 0x0000000000003C00
+fs rights: 0x00000000000040F3
+		- fs_rights.available_bit: 0
+		- fs_rights.default_big: 1
+		- fs_rights.descriptor_privilege_level: 3
+		- fs_rights.descriptor_type: 1
+		- fs_rights.granularity: 0
+		- fs_rights.long_mode: 0
+		- fs_rights.present: 1
+		- fs_rights.type: 3
+		- fs_rights.unusable: 0
+gs selector: 0x000000000000002B
+gs base address: 0x0000000000000000
+gs limit: 0x00000000FFFFFFFF
+gs rights: 0x000000000000C0F3
+		- gs_rights.available_bit: 0
+		- gs_rights.default_big: 1
+		- gs_rights.descriptor_privilege_level: 3
+		- gs_rights.descriptor_type: 1
+		- gs_rights.granularity: 1
+		- gs_rights.long_mode: 0
+		- gs_rights.present: 1
+		- gs_rights.type: 3
+		- gs_rights.unusable: 0
+ss selector: 0x0000000000000018
+ss base address: 0x0000000000000000
+ss limit: 0x0000000000000000
+ss rights: 0x0000000000004093
+		- ss_rights.available_bit: 0
+		- ss_rights.default_big: 1
+		- ss_rights.descriptor_privilege_level: 0
+		- ss_rights.descriptor_type: 1
+		- ss_rights.granularity: 0
+		- ss_rights.long_mode: 0
+		- ss_rights.present: 1
+		- ss_rights.type: 3
+		- ss_rights.unusable: 0
+cs selector: 0x0000000000000010
+cs base address: 0x0000000000000000
+cs limit: 0x0000000000000000
+cs rights: 0x000000000000209B
+		- cs_rights.available_bit: 0
+		- cs_rights.default_big: 0
+		- cs_rights.descriptor_privilege_level: 0
+		- cs_rights.descriptor_type: 1
+		- cs_rights.granularity: 0
+		- cs_rights.long_mode: 1
+		- cs_rights.present: 1
+		- cs_rights.type: 11
+		- cs_rights.unusable: 0
+tr selector: 0x0000000000000040
+tr base address: 0xFFFFF8036EA5F000
+tr limit: 0x0000000000000067
+tr rights: 0x000000000000008B
+		- tr_rights.available_bit: 0
+		- tr_rights.default_big: 0
+		- tr_rights.descriptor_privilege_level: 0
+		- tr_rights.descriptor_type: 0
+		- tr_rights.granularity: 0
+		- tr_rights.long_mode: 0
+		- tr_rights.present: 1
+		- tr_rights.type: 11
+		- tr_rights.unusable: 0
+ldt selector: 0x0000000000000040
+ldt base address: 0xFFFFF8036EA5F000
+ldt limit: 0x0000000000000067
+ldt rights: 0x000000000000008B
+		- ldt_rights.available_bit: 0
+		- ldt_rights.default_big: 0
+		- ldt_rights.descriptor_privilege_level: 0
+		- ldt_rights.descriptor_type: 0
+		- ldt_rights.granularity: 0
+		- ldt_rights.long_mode: 0
+		- ldt_rights.present: 1
+		- ldt_rights.type: 11
+		- ldt_rights.unusable: 0
+guest gs base (from readmsr): 0xFFFFF80365406000
+guest fs base (from readmsr): 0x0000000000000000
+```
