@@ -68,11 +68,13 @@ This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, 
 (bits 1:0) must equal the RPL of the selector field for CS.
 
 
+
 * Base-address fields.
 
     - TR, FS, GS. The address must be canonical.
     - CS. Bits 63:32 of the address must be zero.
     - SS, DS, ES. If the register is usable, bits 63:32 of the address must be zero.
+    
     
     
 * Access-rights fields for CS, SS, DS, ES, FS, GS.
@@ -83,6 +85,8 @@ This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, 
         - Bit 0 of the Type must be 1 (accessed).
         - If bit 3 of the Type is 1 (code segment), then bit 1 of the Type must be 1 (readable).
     - Bit 4 (S). If the register is CS or if the register is usable, S must be 1
+    
+    
 ```
 es selector: 0x000000000000002B
 es base address: 0x0000000000000000
