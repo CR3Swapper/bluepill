@@ -194,7 +194,7 @@ ds rights: 0x000000000000C0F3
 		- ds_rights.unusable: 0
 ```
 
-* TR Access Rights. The different sub-fields are considered separately:
+* TR Access Rights Checks. The different sub-fields are considered separately:
 
     - Bits 3:0 (Type).
         - If the guest will not be IA-32e mode, the Type must be 3 (16-bit busy TSS) or 11 (32-bit busy
@@ -229,11 +229,17 @@ tr rights: 0x000000000000008B
 		- tr_rights.unusable: 0
 ```
 
-* LDTR. The following checks on the different sub-fields apply only if LDTR is usable:
+* LDTR Access Rights Checks. The following checks on the different sub-fields apply only if LDTR is usable:
 
     - Bits 3:0 (Type). The Type must be 2 (LDT).
 	- Bit 4 (S). S must be 0.
-
+    - Bit 7 (P). P must be 1.
+    - Bits 11:8 (reserved). These bits must all be 0.
+    - Bit 15 (G).
+        - If any bit in the limit field in the range 11:0 is 0, G must be 0.
+        - If any bit in the limit field in the range 31:20 is 1, G must be 1.
+    - Bits 31:17 (reserved). These bits must all be 0.
+    
 ```
 ldt selector: 0x0000000000000000
 		- ldt.index: 0
