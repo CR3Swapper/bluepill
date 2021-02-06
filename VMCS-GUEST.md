@@ -89,6 +89,9 @@ This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, 
     
 ```
 es selector: 0x000000000000002B
+ 	 - es.index: 5
+	 - es.request_privilege_level: 3
+	 - es.table: 0
 es base address: 0x0000000000000000
 es limit: 0x00000000FFFFFFFF
 es rights: 0x000000000000C0F3
@@ -101,7 +104,12 @@ es rights: 0x000000000000C0F3
 		- es_rights.present: 1
 		- es_rights.type: 3
 		- es_rights.unusable: 0
+		
+		
 fs selector: 0x0000000000000053
+		- fs.index: 10
+		- fs.request_privilege_level: 3
+		- fs.table: 0
 fs base address: 0x0000000000000000
 fs limit: 0x0000000000003C00
 fs rights: 0x00000000000040F3
@@ -114,7 +122,12 @@ fs rights: 0x00000000000040F3
 		- fs_rights.present: 1
 		- fs_rights.type: 3
 		- fs_rights.unusable: 0
+		
+		
 gs selector: 0x000000000000002B
+		- gs.index: 5
+		- gs.request_privilege_level: 3
+		- gs.table: 0
 gs base address: 0x0000000000000000
 gs limit: 0x00000000FFFFFFFF
 gs rights: 0x000000000000C0F3
@@ -127,7 +140,12 @@ gs rights: 0x000000000000C0F3
 		- gs_rights.present: 1
 		- gs_rights.type: 3
 		- gs_rights.unusable: 0
+		
+		
 ss selector: 0x0000000000000018
+		- ss.index: 3
+		- ss.request_privilege_level: 0
+		- ss.table: 0
 ss base address: 0x0000000000000000
 ss limit: 0x0000000000000000
 ss rights: 0x0000000000004093
@@ -140,7 +158,12 @@ ss rights: 0x0000000000004093
 		- ss_rights.present: 1
 		- ss_rights.type: 3
 		- ss_rights.unusable: 0
+		
+		
 cs selector: 0x0000000000000010
+		- cs.index: 2
+		- cs.request_privilege_level: 0
+		- cs.table: 0
 cs base address: 0x0000000000000000
 cs limit: 0x0000000000000000
 cs rights: 0x000000000000209B
@@ -153,7 +176,30 @@ cs rights: 0x000000000000209B
 		- cs_rights.present: 1
 		- cs_rights.type: 11
 		- cs_rights.unusable: 0
+		
+		
+ds selector: 0x000000000000002B
+		- ds.index: 5
+		- ds.request_privilege_level: 3
+		- ds.table: 0
+ds base address: 0x0000000000000000
+ds limit: 0x00000000FFFFFFFF
+ds rights: 0x000000000000C0F3
+		- ds_rights.available_bit: 0
+		- ds_rights.default_big: 1
+		- ds_rights.descriptor_privilege_level: 3
+		- ds_rights.descriptor_type: 1
+		- ds_rights.granularity: 1
+		- ds_rights.long_mode: 0
+		- ds_rights.present: 1
+		- ds_rights.type: 3
+		- ds_rights.unusable: 0
+		
+		
 tr selector: 0x0000000000000040
+		- tr.index: 8
+		- tr.request_privilege_level: 0
+		- tr.table: 0
 tr base address: 0xFFFFF8036EA5F000
 tr limit: 0x0000000000000067
 tr rights: 0x000000000000008B
@@ -166,7 +212,12 @@ tr rights: 0x000000000000008B
 		- tr_rights.present: 1
 		- tr_rights.type: 11
 		- tr_rights.unusable: 0
-ldt selector: 0x0000000000000040
+		
+		
+ldt selector: 0x0000000000000000
+		- ldt.index: 0
+		- ldt.request_privilege_level: 0
+		- ldt.table: 0
 ldt base address: 0xFFFFF8036EA5F000
 ldt limit: 0x0000000000000067
 ldt rights: 0x000000000000008B
@@ -179,6 +230,7 @@ ldt rights: 0x000000000000008B
 		- ldt_rights.present: 1
 		- ldt_rights.type: 11
 		- ldt_rights.unusable: 0
+		
 guest gs base (from readmsr): 0xFFFFF80365406000
 guest fs base (from readmsr): 0x0000000000000000
 ```
