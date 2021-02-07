@@ -5,10 +5,23 @@
 
 # Bluepill
 
-Bluepill is an Intel type-2 research hypervisor written with no access to github.com. This project is purely for educational purposes and is designed to run on Windows 10 systems.
+Bluepill is an Intel type-2 research hypervisor. This project is purely for educational purposes and is designed to run on Windows 10 systems.
 This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 
 ### VMCS
 
-Dump of VMCS control fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS.md). This is not required, but for learning its nice to
+This section of the readme just contains notes and a list of things I stumbled on and took me a while to figure out and fix.
+
+##### VMCS Controls
+
+* One of the mistakes I made early on was setting bits high after applying high/low MSR values. For example my xeons dont support Intel Processor Trace (Intel PT) and I was setting `entry_ctls.conceal_vmx_from_pt = true` after applying the MSR high/low masks. This caused vmxerror #7 (invalid vmcs controls). Now i set the bit high before i apply the high/low bit mask so if my hypervisor runs on a cpu that has Intel PT support it will be concealed from Intel PT.
+* My xeons also dont support xsave/xrstor and I was setting enable_xsave in secondary processor based vmexit controls after applying `IA32_VMX_PROCBASED_CTLS2` high/low bitmask. Which caused vmxerror #7 (invalid vmcs controls).
+
+Dump of VMCS control fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS-CONTROLS.md). This is not required, but for learning its nice to
 see exactly what the MSR masks are, and what VMCS field's are enabled after you apply high/low bit masks.
+
+##### VMCS Guest State
+
+* After getting my first vmexit the exit reason was 0x80000021 (invalid guest state). I thought it was segmentation code since I've never done anything with segments before but after a few days of checking every single segment check in chapter 26 section 3, I continued reading the guest requirements in chapter 24  section 4, part 2 goes over non-register states and I was not setting any of these `VMCS_GUEST_ACTIVITY_STATE`, `VMCS_GUEST_INTERRUPTIBILITY_STATE`, or `VMCS_GUEST_PENDING_DEBUG_EXCEPTIONS`. 
+
+Dump of VMCS guest fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS-GUEST.md). 
