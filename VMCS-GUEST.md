@@ -62,26 +62,26 @@ This section specifies the checks on the fields for CS, SS, DS, ES, FS, GS, TR, 
 
 * Selector fields.
 
-    - TR. The TI flag (bit 2) must be 0.
-    - LDTR. If LDTR is usable, the TI flag (bit 2) must be 0. 
-    - SS. If the guest will not be virtual-8086 and the “unrestricted guest” VM-execution control is 0, the RPL
-(bits 1:0) must equal the RPL of the selector field for CS.
+    - TR. The TI flag (bit 2) must be 0. :white_check_mark:
+    - LDTR. If LDTR is usable, the TI flag (bit 2) must be 0.  :white_check_mark:
+    - SS. If the guest will not be virtual-8086 and the “unrestricted guest” VM-execution control is 0, the RPL :white_check_mark:
+(bits 1:0) must equal the RPL of the selector field for CS. :white_check_mark:
 
 
 * Base-address fields.
 
-    - TR, FS, GS. The address must be canonical.
-    - CS. Bits 63:32 of the address must be zero.
-    - SS, DS, ES. If the register is usable, bits 63:32 of the address must be zero.
+    - TR, FS, GS. The address must be canonical. :white_check_mark:
+    - CS. Bits 63:32 of the address must be zero. :white_check_mark:
+    - SS, DS, ES. If the register is usable, bits 63:32 of the address must be zero. :white_check_mark:
     
 * Access-rights fields for CS, SS, DS, ES, FS, GS.
 
-    - CS Bits 3:0 (Type): must be 9, 11, 13, or 15 (accessed code segment).
-    - SS. If SS is usable, the Type must be 3 or 7 (read/write, accessed data segment).
-    - DS, ES, FS, GS. The following checks apply if the register is usable
-        - Bit 0 of the Type must be 1 (accessed).
-        - If bit 3 of the Type is 1 (code segment), then bit 1 of the Type must be 1 (readable).
-    - Bit 4 (S). If the register is CS or if the register is usable, S must be 1
+    - CS Bits 3:0 (Type): must be 9, 11, 13, or 15 (accessed code segment). :white_check_mark:
+    - SS. If SS is usable, the Type must be 3 or 7 (read/write, accessed data segment). :white_check_mark:
+    - DS, ES, FS, GS. The following checks apply if the register is usable :white_check_mark:
+        - Bit 0 of the Type must be 1 (accessed). :white_check_mark:
+        - If bit 3 of the Type is 1 (code segment), then bit 1 of the Type must be 1 (readable). :white_check_mark:
+    - Bit 4 (S). If the register is CS or if the register is usable, S must be 1 :white_check_mark:
     
 ```
 es selector: 0x000000000000002B
@@ -198,17 +198,17 @@ ds rights: 0x000000000000C0F3
 
     - Bits 3:0 (Type).
         - If the guest will not be IA-32e mode, the Type must be 3 (16-bit busy TSS) or 11 (32-bit busy
-TSS).
-        - If the guest will be IA-32e mode, the Type must be 11 (64-bit busy TSS).
+TSS). :white_check_mark:
+        - If the guest will be IA-32e mode, the Type must be 11 (64-bit busy TSS). :white_check_mark:
         
-    - Bit 4 (S). S must be 0.
-    - Bit 7 (P). P must be 1.
-    - Bits 11:8 (reserved). These bits must all be 0.
+    - Bit 4 (S). S must be 0. :white_check_mark:
+    - Bit 7 (P). P must be 1. :white_check_mark:
+    - Bits 11:8 (reserved). These bits must all be 0. :white_check_mark:
     - Bit 15 (G).
-        - If any bit in the limit field in the range 11:0 is 0, G must be 0.
-        - If any bit in the limit field in the range 31:20 is 1, G must be 1.
-    - Bit 16 (Unusable). The unusable bit must be 0.
-    - Bits 31:17 (reserved). These bits must all be 0.
+        - If any bit in the limit field in the range 11:0 is 0, G must be 0. :white_check_mark:
+        - If any bit in the limit field in the range 31:20 is 1, G must be 1. :white_check_mark:
+    - Bit 16 (Unusable). The unusable bit must be 0. :white_check_mark:
+    - Bits 31:17 (reserved). These bits must all be 0. :white_check_mark:
     
 ```
 tr selector: 0x0000000000000040
@@ -231,14 +231,14 @@ tr rights: 0x000000000000008B
 
 * LDTR Access Rights Checks. The following checks on the different sub-fields apply only if LDTR is usable:
 
-    - Bits 3:0 (Type). The Type must be 2 (LDT).
-	- Bit 4 (S). S must be 0.
-    - Bit 7 (P). P must be 1.
-    - Bits 11:8 (reserved). These bits must all be 0.
+    - Bits 3:0 (Type). The Type must be 2 (LDT). :white_check_mark:
+	- Bit 4 (S). S must be 0. :white_check_mark:
+    - Bit 7 (P). P must be 1. :white_check_mark:
+    - Bits 11:8 (reserved). These bits must all be 0. :white_check_mark:
     - Bit 15 (G).
-        - If any bit in the limit field in the range 11:0 is 0, G must be 0.
-        - If any bit in the limit field in the range 31:20 is 1, G must be 1.
-    - Bits 31:17 (reserved). These bits must all be 0.
+        - If any bit in the limit field in the range 11:0 is 0, G must be 0. :white_check_mark:
+        - If any bit in the limit field in the range 31:20 is 1, G must be 1. :white_check_mark:
+    - Bits 31:17 (reserved). These bits must all be 0. :white_check_mark:
     
 ```
 ldt selector: 0x0000000000000000
