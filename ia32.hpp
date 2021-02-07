@@ -17819,6 +17819,7 @@ typedef union
   */
 typedef union
 {
+    uint32_t flags;
     struct
     {
         /**
@@ -17904,8 +17905,6 @@ typedef union
 #define VMX_SEGMENT_ACCESS_RIGHTS_UNUSABLE(_)                        (((_) >> 16) & 0x01)
         uint32_t reserved2 : 15;
     };
-
-    uint32_t flags;
 } vmx_segment_access_rights;
 
 /**
@@ -20783,6 +20782,7 @@ typedef union
  */
 typedef union
 {
+    uint64_t flags;
     struct
     {
         /**
@@ -20987,8 +20987,6 @@ typedef union
 #define RFLAGS_IDENTIFICATION_FLAG(_)                                (((_) >> 21) & 0x01)
         uint64_t reserved4 : 42;
     };
-
-    uint64_t flags;
 } rflags;
 
 /**

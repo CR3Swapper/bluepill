@@ -12,6 +12,6 @@ extern "C" u16 readldt(void);
 
 namespace segment
 {
-	auto get_info(segment_descriptor_register_64 gdt_value, segment_selector segment_selector) -> hv::segment_info_ctx;
+	auto get_info(const segment_descriptor_register_64& gdt_value, segment_selector segment_selector) -> hv::segment_info_ctx;
 	auto get_access_rights(segment_descriptor_64* segment_descriptor) -> vmx_segment_access_rights;
 }

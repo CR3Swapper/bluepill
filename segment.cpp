@@ -5,6 +5,8 @@ namespace segment
 	auto get_access_rights(segment_descriptor_64* segment_descriptor) -> vmx_segment_access_rights
 	{
 		vmx_segment_access_rights result;
+		result.flags = NULL;
+
 		result.granularity = segment_descriptor->granularity;
 		result.type = segment_descriptor->type;
 		result.descriptor_type = segment_descriptor->descriptor_type;
@@ -12,23 +14,24 @@ namespace segment
 		result.long_mode = segment_descriptor->long_mode;
 		result.available_bit = segment_descriptor->system;
 		result.default_big = segment_descriptor->default_big;
+		result.descriptor_privilege_level = segment_descriptor->descriptor_privilege_level;
+		result.unusable = !segment_descriptor->present;
 		return result;
 	}
 
-	auto get_info(segment_descriptor_register_64 gdt_value, segment_selector segment_selector) -> hv::segment_info_ctx
+	auto get_info(const segment_descriptor_register_64& gdt_value, segment_selector selector) -> hv::segment_info_ctx
 	{
 		hv::segment_info_ctx segment_info;
+		memset(&segment_info, NULL, sizeof segment_info);
 
-		// GDT->BaseAddress + (segment index << 3) 
-		// gives us a pointer to the segment descriptor...
 		const auto segment_descriptor = 
 			reinterpret_cast<segment_descriptor_64*>(
-				gdt_value.base_address + (segment_selector.index << SEGMENT_SELECTOR_INDEX_BIT));
+				gdt_value.base_address + (selector.index << SEGMENT_SELECTOR_INDEX_BIT));
 
 		// access rights are spread out over the segment 
 		// descriptor so those need to picked out and assigned 
 		// to the vmx segment access rights variable...
-		segment_info.limit = __segmentlimit(segment_selector.flags);
+		segment_info.limit = __segmentlimit(selector.flags);
 		segment_info.rights = get_access_rights(segment_descriptor);
 
 		// base address of a segment is spread over the segment descriptor in 3 places. 2 parts of the 

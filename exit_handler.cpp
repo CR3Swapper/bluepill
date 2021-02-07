@@ -4,6 +4,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 {
 	u64 exit_reason;
 	__vmx_vmread(VMCS_EXIT_REASON, &exit_reason);
+	__debugbreak();
 
 	switch (exit_reason)
 	{
@@ -17,6 +18,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	case VMX_EXIT_REASON_EXECUTE_VMPTRLD:
 	case VMX_EXIT_REASON_EXECUTE_VMPTRST:
 	case VMX_EXIT_REASON_EXECUTE_VMCLEAR:
+	case VMX_EXIT_REASON_EXECUTE_VMLAUNCH:
 	case VMX_EXIT_REASON_EXECUTE_RDTSC:
 	default:
 		break;

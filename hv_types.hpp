@@ -19,12 +19,15 @@ extern "C" void _sgdt(void*);
 #pragma intrinsic(_sgdt);
 
 #ifdef DBG_PRINT_BOOL
-#define DBG_PRINT(format, ...) DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, "[hv [core number = %d]]" format, KeGetCurrentProcessorNumber(), __VA_ARGS__)
+#define DBG_PRINT(format, ...) \
+	DbgPrintEx( DPFLTR_SYSTEM_ID, DPFLTR_ERROR_LEVEL, \
+	"[hv [core number = %d]]" format, KeGetCurrentProcessorNumber(), __VA_ARGS__)
 #else
 #define DBG_PRINT(format, ...)
 #endif
 
 #define HOST_STACK_PAGES 6
+#define HOST_STACK_SIZE PAGE_SIZE * HOST_STACK_PAGES
 
 namespace hv
 {

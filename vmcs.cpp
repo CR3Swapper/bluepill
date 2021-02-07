@@ -15,13 +15,13 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_HOST_CR3, __readcr3());
 		__vmx_vmwrite(VMCS_HOST_CR4, __readcr4());
 
-		// stack growns down...
-		__vmx_vmwrite(VMCS_HOST_RSP, host_rsp + (PAGE_SIZE * HOST_STACK_PAGES) - 8);
-		__vmx_vmwrite(VMCS_HOST_RIP, reinterpret_cast<u64>(host_rip));
+		DBG_PRINT("host cr0: 0x%p\n", __readcr0());
+		DBG_PRINT("host cr3: 0x%p\n", __readcr3());
+		DBG_PRINT("host cr4: 0x%p\n", __readcr4());
 
-		__vmx_vmwrite(VMCS_HOST_SYSENTER_CS, __readmsr(IA32_SYSENTER_CS));
-		__vmx_vmwrite(VMCS_HOST_SYSENTER_EIP, __readmsr(IA32_SYSENTER_EIP));
-		__vmx_vmwrite(VMCS_HOST_SYSENTER_ESP, __readmsr(IA32_SYSENTER_ESP));
+		// stack growns down...
+		__vmx_vmwrite(VMCS_HOST_RSP, host_rsp + (PAGE_SIZE * HOST_STACK_PAGES) - 0x10);
+		__vmx_vmwrite(VMCS_HOST_RIP, reinterpret_cast<u64>(host_rip));
 
 		__vmx_vmwrite(VMCS_HOST_GDTR_BASE, gdt_value.base_address);
 		__vmx_vmwrite(VMCS_HOST_IDTR_BASE, idt_value.base_address);
@@ -64,8 +64,8 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_HOST_SS_SELECTOR, ss.flags);
 		__vmx_vmwrite(VMCS_HOST_TR_SELECTOR, tr.flags);
 
+		// FS base is 0 on windows so no need to read it...
 		__vmx_vmwrite(VMCS_HOST_GS_BASE, __readmsr(IA32_GS_BASE));
-		__vmx_vmwrite(VMCS_HOST_FS_BASE, __readmsr(IA32_FS_BASE));
 	}
 
 	auto setup_guest() -> void
@@ -80,41 +80,73 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_CR3, __readcr3());
 		__vmx_vmwrite(VMCS_GUEST_CR4, __readcr4());
 
+		DBG_PRINT("guest cr0: 0x%p\n", __readcr0());
+		DBG_PRINT("guest cr3: 0x%p\n", __readcr3());
+		DBG_PRINT("guest cr4: 0x%p\n", __readcr4());
+
 		__vmx_vmwrite(VMCS_GUEST_VMCS_LINK_POINTER, ~0ULL);
-		__vmx_vmwrite(VMCS_GUEST_DEBUGCTL, __readmsr(IA32_DEBUGCTL));
-
-		__vmx_vmwrite(VMCS_GUEST_DEBUGCTL, __readmsr(IA32_DEBUGCTL));
-		__vmx_vmwrite(VMCS_GUEST_SYSENTER_CS, __readmsr(IA32_SYSENTER_CS));
-		__vmx_vmwrite(VMCS_GUEST_SYSENTER_EIP, __readmsr(IA32_SYSENTER_EIP));
-		__vmx_vmwrite(VMCS_GUEST_SYSENTER_ESP, __readmsr(IA32_SYSENTER_ESP));
-
 		__vmx_vmwrite(VMCS_GUEST_GDTR_BASE, gdt_value.base_address);
 		__vmx_vmwrite(VMCS_GUEST_GDTR_LIMIT, gdt_value.limit);
+
+		DBG_PRINT("guest gdt base address: 0x%p\n", gdt_value.base_address);
+		DBG_PRINT("guest gdt limit: 0x%x\n", gdt_value.limit);
 
 		__vmx_vmwrite(VMCS_GUEST_IDTR_BASE, idt_value.base_address);
 		__vmx_vmwrite(VMCS_GUEST_IDTR_LIMIT, idt_value.limit);
 
+		DBG_PRINT("guest idt base address: 0x%p\n", idt_value.base_address);
+		DBG_PRINT("guest idt limit: 0x%x\n", idt_value.limit);
+
 		__vmx_vmwrite(VMCS_GUEST_RFLAGS, __readeflags());
 		__vmx_vmwrite(VMCS_GUEST_DR7, __readdr(7));
 
+		DBG_PRINT("guest rflags: 0x%p\n", __readeflags());
+		DBG_PRINT("guest debug register 7: 0x%p\n", __readdr(7));
+
 		const auto [es_rights, es_limit, es_base] = 
 			segment::get_info(gdt_value, segment_selector{ reades() });
+
+		DBG_PRINT("es selector: 0x%p\n", reades());
+		DBG_PRINT("		- es.index: %d\n", segment_selector{ reades() }.index);
+		DBG_PRINT("		- es.request_privilege_level: %d\n", segment_selector{ reades() }.request_privilege_level);
+		DBG_PRINT("		- es.table: %d\n", segment_selector{ reades() }.table);
+		DBG_PRINT("es base address: 0x%p\n", es_base);
+		DBG_PRINT("es limit: 0x%p\n", es_limit);
+		DBG_PRINT("es rights: 0x%p\n", es_rights.flags);
+		DBG_PRINT("		- es_rights.available_bit: %d\n", es_rights.available_bit);
+		DBG_PRINT("		- es_rights.default_big: %d\n", es_rights.default_big);
+		DBG_PRINT("		- es_rights.descriptor_privilege_level: %d\n", es_rights.descriptor_privilege_level);
+		DBG_PRINT("		- es_rights.descriptor_type: %d\n", es_rights.descriptor_type);
+		DBG_PRINT("		- es_rights.granularity: %d\n", es_rights.granularity);
+		DBG_PRINT("		- es_rights.long_mode: %d\n", es_rights.long_mode);
+		DBG_PRINT("		- es_rights.present: %d\n", es_rights.present);
+		DBG_PRINT("		- es_rights.type: %d\n", es_rights.type);
+		DBG_PRINT("		- es_rights.unusable: %d\n", es_rights.unusable);
 
 		__vmx_vmwrite(VMCS_GUEST_ES_BASE, es_base);
 		__vmx_vmwrite(VMCS_GUEST_ES_LIMIT, es_limit);
 		__vmx_vmwrite(VMCS_GUEST_ES_SELECTOR, reades());
 		__vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, es_rights.flags);
 
-		const auto [ds_rights, ds_limit, ds_base] = 
-			segment::get_info(gdt_value, segment_selector{ readds() });
-
-		__vmx_vmwrite(VMCS_GUEST_DS_BASE, ds_base);
-		__vmx_vmwrite(VMCS_GUEST_DS_LIMIT, ds_limit);
-		__vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, readds());
-		__vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, ds_rights.flags);
-
 		const auto [fs_rights, fs_limit, fs_base] = 
 			segment::get_info(gdt_value, segment_selector{ readfs() });
+
+		DBG_PRINT("fs selector: 0x%p\n", readfs());
+		DBG_PRINT("		- fs.index: %d\n", segment_selector{ readfs() }.index);
+		DBG_PRINT("		- fs.request_privilege_level: %d\n", segment_selector{ readfs() }.request_privilege_level);
+		DBG_PRINT("		- fs.table: %d\n", segment_selector{ readfs() }.table);
+		DBG_PRINT("fs base address: 0x%p\n", fs_base);
+		DBG_PRINT("fs limit: 0x%p\n", fs_limit);
+		DBG_PRINT("fs rights: 0x%p\n", fs_rights.flags);
+		DBG_PRINT("		- fs_rights.available_bit: %d\n", fs_rights.available_bit);
+		DBG_PRINT("		- fs_rights.default_big: %d\n", fs_rights.default_big);
+		DBG_PRINT("		- fs_rights.descriptor_privilege_level: %d\n", fs_rights.descriptor_privilege_level);
+		DBG_PRINT("		- fs_rights.descriptor_type: %d\n", fs_rights.descriptor_type);
+		DBG_PRINT("		- fs_rights.granularity: %d\n", fs_rights.granularity);
+		DBG_PRINT("		- fs_rights.long_mode: %d\n", fs_rights.long_mode);
+		DBG_PRINT("		- fs_rights.present: %d\n", fs_rights.present);
+		DBG_PRINT("		- fs_rights.type: %d\n", fs_rights.type);
+		DBG_PRINT("		- fs_rights.unusable: %d\n", fs_rights.unusable);
 
 		__vmx_vmwrite(VMCS_GUEST_FS_BASE, fs_base);
 		__vmx_vmwrite(VMCS_GUEST_FS_LIMIT, fs_limit);
@@ -124,6 +156,23 @@ namespace vmcs
 		const auto [gs_rights, gs_limit, gs_base] = 
 			segment::get_info(gdt_value, segment_selector{ readgs() });
 
+		DBG_PRINT("gs selector: 0x%p\n", readgs());
+		DBG_PRINT("		- gs.index: %d\n", segment_selector{ readgs() }.index);
+		DBG_PRINT("		- gs.request_privilege_level: %d\n", segment_selector{ readgs() }.request_privilege_level);
+		DBG_PRINT("		- gs.table: %d\n", segment_selector{ readgs() }.table);
+		DBG_PRINT("gs base address: 0x%p\n", gs_base);
+		DBG_PRINT("gs limit: 0x%p\n", gs_limit);
+		DBG_PRINT("gs rights: 0x%p\n", gs_rights.flags);
+		DBG_PRINT("		- gs_rights.available_bit: %d\n", gs_rights.available_bit);
+		DBG_PRINT("		- gs_rights.default_big: %d\n", gs_rights.default_big);
+		DBG_PRINT("		- gs_rights.descriptor_privilege_level: %d\n", gs_rights.descriptor_privilege_level);
+		DBG_PRINT("		- gs_rights.descriptor_type: %d\n", gs_rights.descriptor_type);
+		DBG_PRINT("		- gs_rights.granularity: %d\n", gs_rights.granularity);
+		DBG_PRINT("		- gs_rights.long_mode: %d\n", gs_rights.long_mode);
+		DBG_PRINT("		- gs_rights.present: %d\n", gs_rights.present);
+		DBG_PRINT("		- gs_rights.type: %d\n", gs_rights.type);
+		DBG_PRINT("		- gs_rights.unusable: %d\n", gs_rights.unusable);
+
 		__vmx_vmwrite(VMCS_GUEST_GS_BASE, gs_base);
 		__vmx_vmwrite(VMCS_GUEST_GS_LIMIT, gs_limit);
 		__vmx_vmwrite(VMCS_GUEST_GS_SELECTOR, readgs());
@@ -131,6 +180,23 @@ namespace vmcs
 
 		const auto [ss_rights, ss_limit, ss_base] =
 			segment::get_info(gdt_value, segment_selector{ readss() });
+
+		DBG_PRINT("ss selector: 0x%p\n", readss());
+		DBG_PRINT("		- ss.index: %d\n", segment_selector{ readss() }.index);
+		DBG_PRINT("		- ss.request_privilege_level: %d\n", segment_selector{ readss() }.request_privilege_level);
+		DBG_PRINT("		- ss.table: %d\n", segment_selector{ readss() }.table);
+		DBG_PRINT("ss base address: 0x%p\n", ss_base);
+		DBG_PRINT("ss limit: 0x%p\n", ss_limit);
+		DBG_PRINT("ss rights: 0x%p\n", ss_rights.flags);
+		DBG_PRINT("		- ss_rights.available_bit: %d\n", ss_rights.available_bit);
+		DBG_PRINT("		- ss_rights.default_big: %d\n", ss_rights.default_big);
+		DBG_PRINT("		- ss_rights.descriptor_privilege_level: %d\n", ss_rights.descriptor_privilege_level);
+		DBG_PRINT("		- ss_rights.descriptor_type: %d\n", ss_rights.descriptor_type);
+		DBG_PRINT("		- ss_rights.granularity: %d\n", ss_rights.granularity);
+		DBG_PRINT("		- ss_rights.long_mode: %d\n", ss_rights.long_mode);
+		DBG_PRINT("		- ss_rights.present: %d\n", ss_rights.present);
+		DBG_PRINT("		- ss_rights.type: %d\n", ss_rights.type);
+		DBG_PRINT("		- ss_rights.unusable: %d\n", ss_rights.unusable);
 
 		__vmx_vmwrite(VMCS_GUEST_SS_BASE, ss_base);
 		__vmx_vmwrite(VMCS_GUEST_SS_LIMIT, ss_limit);
@@ -140,13 +206,72 @@ namespace vmcs
 		const auto [cs_rights, cs_limit, cs_base] =
 			segment::get_info(gdt_value, segment_selector{ readcs() });
 
+		DBG_PRINT("cs selector: 0x%p\n", readcs());
+		DBG_PRINT("		- cs.index: %d\n", segment_selector{ readcs() }.index);
+		DBG_PRINT("		- cs.request_privilege_level: %d\n", segment_selector{ readcs() }.request_privilege_level);
+		DBG_PRINT("		- cs.table: %d\n", segment_selector{ readcs() }.table);
+		DBG_PRINT("cs base address: 0x%p\n", cs_base);
+		DBG_PRINT("cs limit: 0x%p\n", cs_limit);
+		DBG_PRINT("cs rights: 0x%p\n", cs_rights.flags);
+		DBG_PRINT("		- cs_rights.available_bit: %d\n", cs_rights.available_bit);
+		DBG_PRINT("		- cs_rights.default_big: %d\n", cs_rights.default_big);
+		DBG_PRINT("		- cs_rights.descriptor_privilege_level: %d\n", cs_rights.descriptor_privilege_level);
+		DBG_PRINT("		- cs_rights.descriptor_type: %d\n", cs_rights.descriptor_type);
+		DBG_PRINT("		- cs_rights.granularity: %d\n", cs_rights.granularity);
+		DBG_PRINT("		- cs_rights.long_mode: %d\n", cs_rights.long_mode);
+		DBG_PRINT("		- cs_rights.present: %d\n", cs_rights.present);
+		DBG_PRINT("		- cs_rights.type: %d\n", cs_rights.type);
+		DBG_PRINT("		- cs_rights.unusable: %d\n", cs_rights.unusable);
+
 		__vmx_vmwrite(VMCS_GUEST_CS_BASE, cs_base);
 		__vmx_vmwrite(VMCS_GUEST_CS_LIMIT, cs_limit);
 		__vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, readcs());
 		__vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, cs_rights.flags);
 
+		const auto [ds_rights, ds_limit, ds_base] =
+			segment::get_info(gdt_value, segment_selector{ readds() });
+
+		DBG_PRINT("ds selector: 0x%p\n", readds());
+		DBG_PRINT("		- ds.index: %d\n", segment_selector{ readds() }.index);
+		DBG_PRINT("		- ds.request_privilege_level: %d\n", segment_selector{ readds() }.request_privilege_level);
+		DBG_PRINT("		- ds.table: %d\n", segment_selector{ readds() }.table);
+		DBG_PRINT("ds base address: 0x%p\n", ds_base);
+		DBG_PRINT("ds limit: 0x%p\n", ds_limit);
+		DBG_PRINT("ds rights: 0x%p\n", ds_rights.flags);
+		DBG_PRINT("		- ds_rights.available_bit: %d\n", ds_rights.available_bit);
+		DBG_PRINT("		- ds_rights.default_big: %d\n", ds_rights.default_big);
+		DBG_PRINT("		- ds_rights.descriptor_privilege_level: %d\n", ds_rights.descriptor_privilege_level);
+		DBG_PRINT("		- ds_rights.descriptor_type: %d\n", ds_rights.descriptor_type);
+		DBG_PRINT("		- ds_rights.granularity: %d\n", ds_rights.granularity);
+		DBG_PRINT("		- ds_rights.long_mode: %d\n", ds_rights.long_mode);
+		DBG_PRINT("		- ds_rights.present: %d\n", ds_rights.present);
+		DBG_PRINT("		- ds_rights.type: %d\n", ds_rights.type);
+		DBG_PRINT("		- ds_rights.unusable: %d\n", ds_rights.unusable);
+
+		__vmx_vmwrite(VMCS_GUEST_DS_BASE, ds_base);
+		__vmx_vmwrite(VMCS_GUEST_DS_LIMIT, ds_limit);
+		__vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, readds());
+		__vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, ds_rights.flags);
+
 		const auto [tr_rights, tr_limit, tr_base] =
 			segment::get_info(gdt_value, segment_selector{ readtr() });
+
+		DBG_PRINT("tr selector: 0x%p\n", readtr());
+		DBG_PRINT("		- tr.index: %d\n", segment_selector{ readtr() }.index);
+		DBG_PRINT("		- tr.request_privilege_level: %d\n", segment_selector{ readtr() }.request_privilege_level);
+		DBG_PRINT("		- tr.table: %d\n", segment_selector{ readtr() }.table);
+		DBG_PRINT("tr base address: 0x%p\n", tr_base);
+		DBG_PRINT("tr limit: 0x%p\n", tr_limit);
+		DBG_PRINT("tr rights: 0x%p\n", tr_rights.flags);
+		DBG_PRINT("		- tr_rights.available_bit: %d\n", tr_rights.available_bit);
+		DBG_PRINT("		- tr_rights.default_big: %d\n", tr_rights.default_big);
+		DBG_PRINT("		- tr_rights.descriptor_privilege_level: %d\n", tr_rights.descriptor_privilege_level);
+		DBG_PRINT("		- tr_rights.descriptor_type: %d\n", tr_rights.descriptor_type);
+		DBG_PRINT("		- tr_rights.granularity: %d\n", tr_rights.granularity);
+		DBG_PRINT("		- tr_rights.long_mode: %d\n", tr_rights.long_mode);
+		DBG_PRINT("		- tr_rights.present: %d\n", tr_rights.present);
+		DBG_PRINT("		- tr_rights.type: %d\n", tr_rights.type);
+		DBG_PRINT("		- tr_rights.unusable: %d\n", tr_rights.unusable);
 
 		__vmx_vmwrite(VMCS_GUEST_TR_BASE, tr_base);
 		__vmx_vmwrite(VMCS_GUEST_TR_LIMIT, tr_limit);
@@ -156,13 +281,34 @@ namespace vmcs
 		const auto [ldt_rights, ldt_limit, ldt_base] =
 			segment::get_info(gdt_value, segment_selector{ readldt() });
 
+		DBG_PRINT("ldt selector: 0x%p\n", readldt());
+		DBG_PRINT("		- ldt.index: %d\n", segment_selector{ readldt() }.index);
+		DBG_PRINT("		- ldt.request_privilege_level: %d\n", segment_selector{ readldt() }.request_privilege_level);
+		DBG_PRINT("		- ldt.table: %d\n", segment_selector{ readldt() }.table);
+		DBG_PRINT("ldt base address: 0x%p\n", tr_base);
+		DBG_PRINT("ldt limit: 0x%p\n", tr_limit);
+		DBG_PRINT("ldt rights: 0x%p\n", tr_rights.flags);
+		DBG_PRINT("		- ldt_rights.available_bit: %d\n", tr_rights.available_bit);
+		DBG_PRINT("		- ldt_rights.default_big: %d\n", tr_rights.default_big);
+		DBG_PRINT("		- ldt_rights.descriptor_privilege_level: %d\n", tr_rights.descriptor_privilege_level);
+		DBG_PRINT("		- ldt_rights.descriptor_type: %d\n", tr_rights.descriptor_type);
+		DBG_PRINT("		- ldt_rights.granularity: %d\n", tr_rights.granularity);
+		DBG_PRINT("		- ldt_rights.long_mode: %d\n", tr_rights.long_mode);
+		DBG_PRINT("		- ldt_rights.present: %d\n", tr_rights.present);
+		DBG_PRINT("		- ldt_rights.type: %d\n", tr_rights.type);
+		DBG_PRINT("		- ldt_rights.unusable: %d\n", tr_rights.unusable);
+
 		__vmx_vmwrite(VMCS_GUEST_LDTR_BASE, ldt_base);
 		__vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, ldt_limit);
 		__vmx_vmwrite(VMCS_GUEST_LDTR_SELECTOR, readldt());
 		__vmx_vmwrite(VMCS_GUEST_LDTR_ACCESS_RIGHTS, ldt_rights.flags);
 
 		__vmx_vmwrite(VMCS_GUEST_GS_BASE, __readmsr(IA32_GS_BASE));
-		__vmx_vmwrite(VMCS_GUEST_FS_BASE, __readmsr(IA32_FS_BASE));
+		DBG_PRINT("guest gs base (from readmsr): 0x%p\n", __readmsr(IA32_GS_BASE));		
+
+		__vmx_vmwrite(VMCS_GUEST_ACTIVITY_STATE, 0);
+		__vmx_vmwrite(VMCS_GUEST_INTERRUPTIBILITY_STATE, 0);
+		__vmx_vmwrite(VMCS_GUEST_PENDING_DEBUG_EXCEPTIONS, 0);
 	}
 
 	auto setup_controls() -> void
@@ -233,6 +379,7 @@ namespace vmcs
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_TRUE_ENTRY_CTLS);
 			entry_ctls.ia32e_mode_guest = true;
+			entry_ctls.conceal_vmx_from_pt = true;
 			entry_ctls.flags &= msr_fix_value.allowed_1_settings;
 			entry_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_CONTROLS, entry_ctls.flags);
@@ -373,8 +520,8 @@ namespace vmcs
 
 		msr_fix_value.flags = __readmsr(IA32_VMX_PROCBASED_CTLS2);
 		procbased_ctls2.enable_rdtscp = true;
-		procbased_ctls2.enable_xsaves = true; // although my xeons dont support xsave... other cpus do!
-		procbased_ctls2.conceal_vmx_from_pt = true; // although my xeons dont support processor tracing... other cpus do!
+		procbased_ctls2.enable_xsaves = true; 
+		procbased_ctls2.conceal_vmx_from_pt = true; 
 		procbased_ctls2.flags &= msr_fix_value.allowed_1_settings;
 		procbased_ctls2.flags |= msr_fix_value.allowed_0_settings;
 		__vmx_vmwrite(VMCS_CTRL_SECONDARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls2.flags);

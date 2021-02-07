@@ -1,8 +1,30 @@
 extern exit_handler : proc
 
 .code
+vmxlaunch_processor proc
+	pushfq				; vmlaunch sets some flags if an error happens...
+
+	mov rcx, 0681Ch		; VMCS_GUEST_RSP
+	vmwrite rcx, rsp	; current rsp pointer...
+
+	mov rcx, 0681Eh		; VMCS_GUEST_RIP
+	lea rdx, done		;
+	vmwrite rcx, rdx	; return C0FFEE on success...
+	vmlaunch
+
+	pushfq				; push rflags to the stack then put it into rax...
+	pop rax				;
+
+	popfq				; restore rflags back to what it was in the c++ code...
+	ret
+
+done:
+	popfq				; restore flags and return back to c++ code...
+	mov rax, 0C0FFEEh
+	ret
+vmxlaunch_processor endp
+
 vmxexit_handler proc
-	int 3 ; see if vmexit get called...
 	push rax
 	push rbx
 	push rcx
@@ -19,7 +41,7 @@ vmxexit_handler proc
 	push r14
 	push r15
 
-	sub rsp, 0100h ; 16 xmm registers... probably dont need to do all of them...
+	sub rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment...
 	movaps [rsp], xmm0
 	movaps [rsp + 010h], xmm1
 	movaps [rsp + 020h], xmm2
@@ -58,7 +80,7 @@ vmxexit_handler proc
 	movaps xmm13, [rsp + 0D0h]
 	movaps xmm14, [rsp + 0E0h]
 	movaps xmm15, [rsp + 0F0h]
-	add rsp, 0100h ; 16 xmm registers... probably dont need to do all of them...
+	add rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment...
 
 	pop r15
 	pop r14
