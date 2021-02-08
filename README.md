@@ -22,6 +22,6 @@ see exactly what the MSR masks are, and what VMCS field's are enabled after you 
 
 ##### VMCS Guest State
 
-* After getting my first vmexit the exit reason was 0x80000021 (invalid guest state). I thought it was segmentation code since I've never done anything with segments before but after a few days of checking every single segment check in chapter 26 section 3, I continued reading the guest requirements in chapter 24  section 4, part 2 goes over non-register states and I was not setting any of these `VMCS_GUEST_ACTIVITY_STATE`, `VMCS_GUEST_INTERRUPTIBILITY_STATE`, or `VMCS_GUEST_PENDING_DEBUG_EXCEPTIONS`. 
+* After getting my first vmexit the exit reason was 0x80000021 (invalid guest state). I thought it was segmentation code since I've never done anything with segments before but after a few days of checking every single segment check in chapter 26 section 3, I continued reading the guest requirements in chapter 24  section 4, part 2 goes over non-register states and I was not setting  `VMCS_GUEST_ACTIVITY_STATE` to zero. 
 
 Dump of VMCS guest fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS-GUEST.md). 
