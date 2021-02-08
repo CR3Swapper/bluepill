@@ -1,7 +1,5 @@
 #pragma once
 #include "hv_types.hpp"
-
-// the pml4 itself is inside of the HV...
 #pragma section(".pml4", read, write)
 
 namespace mm

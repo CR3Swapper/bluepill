@@ -79,6 +79,35 @@ namespace hv
 		};
 	};
 
+	typedef union _idt_entry_t
+	{
+		u128 flags;
+		struct
+		{
+			u64 offset_low : 16;
+			u64 segment_selector : 16;
+			u64 reserved_0 : 8;
+			u64 gate_type : 4;
+			u64 storage_segment : 1;
+			u64 dpl : 2;
+			u64 present : 1;
+			u64 offset_middle : 16;
+			u64 offset_high : 32;
+			u64 reserved_1 : 32;
+		};
+	} idt_entry_t, *pidt_entry_t;
+
+	union idt_addr_t
+	{
+		u64 addr;
+		struct
+		{
+			u64 offset_low : 16;
+			u64 offset_middle : 16;
+			u64 offset_high : 32;
+		};
+	};
+
 	union ia32_efer_t
 	{
 		unsigned __int64 control;

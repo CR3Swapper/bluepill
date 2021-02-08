@@ -32,6 +32,9 @@
     <ClCompile Include="mm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="idt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vmxon.hpp">
@@ -58,12 +61,18 @@
     <ClInclude Include="mm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="idt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="segment_intrin.asm">
       <Filter>Source Files</Filter>
     </MASM>
     <MASM Include="vmxexit_handler.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+    <MASM Include="idt_handler.asm">
       <Filter>Source Files</Filter>
     </MASM>
   </ItemGroup>
