@@ -251,6 +251,7 @@ typedef union
 
 typedef union
 {
+    uint64_t flags;
     struct
     {
         uint64_t reserved1 : 3;
@@ -300,8 +301,6 @@ typedef union
 #define CR3_ADDRESS_OF_PAGE_DIRECTORY(_)                             (((_) >> 12) & 0xFFFFFFFFF)
         uint64_t reserved3 : 16;
     };
-
-    uint64_t flags;
 } cr3;
 
 typedef union
@@ -11518,6 +11517,7 @@ typedef union
 #define IA32_VMX_TRUE_ENTRY_CTLS                                     0x00000490
 typedef union
 {
+    uint64_t flags;
     struct
     {
         /**
@@ -11540,8 +11540,6 @@ typedef union
 #define IA32_VMX_TRUE_CTLS_ALLOWED_1_SETTINGS_MASK                   0xFFFFFFFF
 #define IA32_VMX_TRUE_CTLS_ALLOWED_1_SETTINGS(_)                     (((_) >> 32) & 0xFFFFFFFF)
     };
-
-    uint64_t flags;
 } ia32_vmx_true_ctls_register;
 
 /**
@@ -20156,6 +20154,7 @@ typedef enum
  */
 typedef union
 {
+    uint32_t flags;
     struct
     {
         /**
@@ -20204,8 +20203,6 @@ typedef union
 #define VMENTRY_INTERRUPT_INFORMATION_VALID_MASK                     0x01
 #define VMENTRY_INTERRUPT_INFORMATION_VALID(_)                       (((_) >> 31) & 0x01)
     };
-
-    uint32_t flags;
 } vmentry_interrupt_information;
 
 /**

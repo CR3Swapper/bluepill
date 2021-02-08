@@ -21,8 +21,7 @@ namespace segment
 
 	auto get_info(const segment_descriptor_register_64& gdt_value, segment_selector selector) -> hv::segment_info_ctx
 	{
-		hv::segment_info_ctx segment_info;
-		memset(&segment_info, NULL, sizeof segment_info);
+		hv::segment_info_ctx segment_info{};
 
 		const auto segment_descriptor = 
 			reinterpret_cast<segment_descriptor_64*>(

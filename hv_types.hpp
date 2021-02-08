@@ -50,6 +50,8 @@ namespace hv
 		u128 xmm14;
 		u128 xmm15;
 
+		u64 padding_8b;
+
 		u64 r15;
 		u64 r14;
 		u64 r13;
@@ -63,8 +65,19 @@ namespace hv
 		u64 rsi;
 		u64 rdx;
 		u64 rcx;
+		u64 rbx;
 		u64 rax;
 	} guest_registers, * pguest_registers;
+
+	union msr_split
+	{
+		u64 value;
+		struct
+		{
+			u64 low : 32;
+			u64 high : 32;
+		};
+	};
 
 	union ia32_efer_t
 	{

@@ -4,34 +4,8 @@ auto driver_unload(
 	PDRIVER_OBJECT driver_object
 ) -> void
 {
-	// TODO vmcall and ask HV to vmxoff...
-	KeIpiGenericCall(
-		[](ULONG_PTR) -> ULONG_PTR 
-		{
-			__vmx_off();
-			hv::cr4_t cr4 = { __readcr4() };
-			cr4.vmx_enable = false;
-			__writecr4(cr4.flags);
-
-			hv::ia32_feature_control_msr_t feature_msr = { __readmsr(IA32_FEATURE_CONTROL) };
-			feature_msr.bits.vmxon_outside_smx = false;
-			feature_msr.bits.lock = false;
-			__writemsr(IA32_FEATURE_CONTROL, feature_msr.control);
-			return NULL;
-		}, NULL
-	);
-
-	for (auto idx = 0u; idx < vmxon::g_vmx_ctx->vcpu_num; ++idx)
-	{
-		MmFreeContiguousMemory(vmxon::g_vmx_ctx->vcpus[idx]->vmcs);
-		MmFreeContiguousMemory(vmxon::g_vmx_ctx->vcpus[idx]->vmxon);
-
-		ExFreePool((void*)vmxon::g_vmx_ctx->vcpus[idx]->host_stack);
-		ExFreePool(vmxon::g_vmx_ctx->vcpus[idx]);
-	}
-
-	ExFreePool(vmxon::g_vmx_ctx->vcpus);
-	ExFreePool(vmxon::g_vmx_ctx);
+	// test to see if invalid opcode happens...
+	__vmx_off();
 }
 
 auto driver_entry(

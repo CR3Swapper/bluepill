@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="exit_handler.cpp" />
+    <ClCompile Include="mm.cpp" />
     <ClCompile Include="segment.cpp" />
     <ClCompile Include="vmcs.cpp" />
     <ClCompile Include="vmxlaunch.cpp" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ia32.hpp" />
+    <ClInclude Include="mm.hpp" />
     <ClInclude Include="segment_intrin.h" />
     <ClInclude Include="hv_types.hpp" />
     <ClInclude Include="vmcs.hpp" />

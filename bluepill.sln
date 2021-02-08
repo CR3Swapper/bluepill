@@ -5,18 +5,30 @@ VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bluepill", "bluepill.vcxproj", "{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "demo", "demo\demo.vcxproj", "{A3D028D7-1650-4036-9FB0-4B8CC16268FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Debug|x64.ActiveCfg = Debug|x64
 		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Debug|x64.Build.0 = Debug|x64
 		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Debug|x64.Deploy.0 = Debug|x64
+		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Debug|x86.ActiveCfg = Debug|x64
 		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x64.ActiveCfg = Release|x64
 		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x64.Build.0 = Release|x64
 		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x64.Deploy.0 = Release|x64
+		{881CCCA6-80EB-486F-8923-4F4B7DD41F9A}.Release|x86.ActiveCfg = Release|x64
+		{A3D028D7-1650-4036-9FB0-4B8CC16268FE}.Debug|x64.ActiveCfg = Debug|x64
+		{A3D028D7-1650-4036-9FB0-4B8CC16268FE}.Debug|x64.Build.0 = Debug|x64
+		{A3D028D7-1650-4036-9FB0-4B8CC16268FE}.Debug|x86.ActiveCfg = Debug|x64
+		{A3D028D7-1650-4036-9FB0-4B8CC16268FE}.Release|x64.ActiveCfg = Release|x64
+		{A3D028D7-1650-4036-9FB0-4B8CC16268FE}.Release|x64.Build.0 = Release|x64
+		{A3D028D7-1650-4036-9FB0-4B8CC16268FE}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

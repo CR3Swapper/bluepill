@@ -64,22 +64,22 @@ vmxexit_handler proc
 	call exit_handler
 	add rsp, 20h
 
-	movaps xmm0, [rsp]
-	movaps xmm1, [rsp + 010h]
-	movaps xmm2, [rsp + 020h]
-	movaps xmm3, [rsp + 030h]
-	movaps xmm4, [rsp + 040h]
-	movaps xmm5, [rsp + 050h]
-	movaps xmm6, [rsp + 060h]
-	movaps xmm7, [rsp + 070h]
-	movaps xmm8, [rsp + 080h]
-	movaps xmm9, [rsp + 090h]
-	movaps xmm10, [rsp + 0A0h]
-	movaps xmm11, [rsp + 0B0h]
-	movaps xmm12, [rsp + 0C0h]
-	movaps xmm13, [rsp + 0D0h]
-	movaps xmm14, [rsp + 0E0h]
-	movaps xmm15, [rsp + 0F0h]
+	movups xmm0, [rsp]
+	movups xmm1, [rsp + 010h]
+	movups xmm2, [rsp + 020h]
+	movups xmm3, [rsp + 030h]
+	movups xmm4, [rsp + 040h]
+	movups xmm5, [rsp + 050h]
+	movups xmm6, [rsp + 060h]
+	movups xmm7, [rsp + 070h]
+	movups xmm8, [rsp + 080h]
+	movups xmm9, [rsp + 090h]
+	movups xmm10, [rsp + 0A0h]
+	movups xmm11, [rsp + 0B0h]
+	movups xmm12, [rsp + 0C0h]
+	movups xmm13, [rsp + 0D0h]
+	movups xmm14, [rsp + 0E0h]
+	movups xmm15, [rsp + 0F0h]
 	add rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment...
 
 	pop r15
@@ -95,6 +95,7 @@ vmxexit_handler proc
 	pop rsi
 	pop rdx
 	pop rcx
+	pop rbx
 	pop rax
 
 	vmresume
