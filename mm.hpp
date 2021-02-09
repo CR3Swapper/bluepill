@@ -1,5 +1,7 @@
 #pragma once
 #include "hv_types.hpp"
+
+#define PML4_SELF_REF 254
 #pragma section(".pml4", read, write)
 
 namespace mm
@@ -105,12 +107,11 @@ namespace mm
     } pte, * ppte;
 
     enum class map_type{ dest, src };
-
-    constexpr auto self_ref_index = 254;
     inline const ppml4e vmxroot_pml4 = reinterpret_cast<ppml4e>(0x7f0000000000);
 
     // make sure this is 4kb aligned or you are going to be meeting allah...
-	__declspec(allocate(".pml4")) inline pml4e pml4[512];
+	__declspec(allocate(".pml4")) 
+    inline pml4e pml4[512];
 
     // translate vmxroot address's...
     auto translate(virt_addr_t virt_addr) -> u64;

@@ -11,9 +11,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="entry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="vmxon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -26,13 +23,16 @@
     <ClCompile Include="vmcs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="segment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="idt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gdt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="drv_entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,6 +64,12 @@
     <ClInclude Include="idt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="invd.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gdt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="segment_intrin.asm">
@@ -72,7 +78,10 @@
     <MASM Include="vmxexit_handler.asm">
       <Filter>Source Files</Filter>
     </MASM>
-    <MASM Include="idt_handler.asm">
+    <MASM Include="invd.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
+    <MASM Include="idt_handlers.asm">
       <Filter>Source Files</Filter>
     </MASM>
   </ItemGroup>

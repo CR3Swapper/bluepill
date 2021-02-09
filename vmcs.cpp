@@ -1,37 +1,14 @@
 #include "vmcs.hpp"
-#include "mm.hpp"
 
 namespace vmcs
 {
-	auto setup_host(void* host_rip, u64 host_rsp) -> void
+	auto setup_host(void* host_rip, u64 host_rsp, cr3 cr3_value) -> void
 	{
 		segment_descriptor_register_64 gdt_value;
 		segment_descriptor_register_64 idt_value;
 
 		__sidt(&idt_value);
 		_sgdt(&gdt_value);
-
-		cr3 cr3_value;
-		cr3_value.flags = __readcr3();
-		cr3_value.address_of_page_directory = 
-			(MmGetPhysicalAddress(mm::pml4).QuadPart >> 12);
-
-		memset(mm::pml4, NULL, sizeof mm::pml4);
-		mm::pml4[mm::self_ref_index].pfn = cr3_value.address_of_page_directory;
-		mm::pml4[mm::self_ref_index].present = true;
-		mm::pml4[mm::self_ref_index].rw = true;
-		mm::pml4[mm::self_ref_index].user_supervisor = false;
-
-		PHYSICAL_ADDRESS current_pml4;
-		current_pml4.QuadPart = 
-			(cr3{ __readcr3() }.address_of_page_directory << 12);
-
-		const auto kernel_pml4 = 
-			reinterpret_cast<mm::ppml4e>(
-				MmGetVirtualForPhysical(current_pml4));
-
-		// vmxroot will have the same "address space" as the current one being executed in...
-		memcpy(&mm::pml4[255], &kernel_pml4[255], sizeof(mm::pml4e) * 255);
 
 		__vmx_vmwrite(VMCS_HOST_CR0, __readcr0());
 		__vmx_vmwrite(VMCS_HOST_CR3, cr3_value.flags);
@@ -109,7 +86,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_DR7, __readdr(7));
 
 		const auto [es_rights, es_limit, es_base] = 
-			segment::get_info(gdt_value, segment_selector{ reades() });
+			gdt::get_info(gdt_value, segment_selector{ reades() });
 
 		__vmx_vmwrite(VMCS_GUEST_ES_BASE, es_base);
 		__vmx_vmwrite(VMCS_GUEST_ES_LIMIT, es_limit);
@@ -117,7 +94,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, es_rights.flags);
 
 		const auto [fs_rights, fs_limit, fs_base] = 
-			segment::get_info(gdt_value, segment_selector{ readfs() });
+			gdt::get_info(gdt_value, segment_selector{ readfs() });
 
 		__vmx_vmwrite(VMCS_GUEST_FS_BASE, fs_base);
 		__vmx_vmwrite(VMCS_GUEST_FS_LIMIT, fs_limit);
@@ -125,7 +102,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_FS_ACCESS_RIGHTS, fs_rights.flags);
 
 		const auto [gs_rights, gs_limit, gs_base] = 
-			segment::get_info(gdt_value, segment_selector{ readgs() });
+			gdt::get_info(gdt_value, segment_selector{ readgs() });
 
 		__vmx_vmwrite(VMCS_GUEST_GS_BASE, gs_base);
 		__vmx_vmwrite(VMCS_GUEST_GS_LIMIT, gs_limit);
@@ -133,7 +110,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_GS_ACCESS_RIGHTS, gs_rights.flags);
 
 		const auto [ss_rights, ss_limit, ss_base] =
-			segment::get_info(gdt_value, segment_selector{ readss() });
+			gdt::get_info(gdt_value, segment_selector{ readss() });
 
 		__vmx_vmwrite(VMCS_GUEST_SS_BASE, ss_base);
 		__vmx_vmwrite(VMCS_GUEST_SS_LIMIT, ss_limit);
@@ -141,7 +118,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, ss_rights.flags);
 
 		const auto [cs_rights, cs_limit, cs_base] =
-			segment::get_info(gdt_value, segment_selector{ readcs() });
+			gdt::get_info(gdt_value, segment_selector{ readcs() });
 
 		__vmx_vmwrite(VMCS_GUEST_CS_BASE, cs_base);
 		__vmx_vmwrite(VMCS_GUEST_CS_LIMIT, cs_limit);
@@ -149,7 +126,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, cs_rights.flags);
 
 		const auto [ds_rights, ds_limit, ds_base] =
-			segment::get_info(gdt_value, segment_selector{ readds() });
+			gdt::get_info(gdt_value, segment_selector{ readds() });
 
 		__vmx_vmwrite(VMCS_GUEST_DS_BASE, ds_base);
 		__vmx_vmwrite(VMCS_GUEST_DS_LIMIT, ds_limit);
@@ -157,7 +134,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, ds_rights.flags);
 
 		const auto [tr_rights, tr_limit, tr_base] =
-			segment::get_info(gdt_value, segment_selector{ readtr() });
+			gdt::get_info(gdt_value, segment_selector{ readtr() });
 
 		__vmx_vmwrite(VMCS_GUEST_TR_BASE, tr_base);
 		__vmx_vmwrite(VMCS_GUEST_TR_LIMIT, tr_limit);
@@ -165,7 +142,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, tr_rights.flags);
 
 		const auto [ldt_rights, ldt_limit, ldt_base] =
-			segment::get_info(gdt_value, segment_selector{ readldt() });
+			gdt::get_info(gdt_value, segment_selector{ readldt() });
 
 		__vmx_vmwrite(VMCS_GUEST_LDTR_BASE, ldt_base);
 		__vmx_vmwrite(VMCS_GUEST_LDTR_LIMIT, ldt_limit);

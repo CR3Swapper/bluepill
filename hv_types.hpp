@@ -69,6 +69,51 @@ namespace hv
 		u64 rax;
 	} guest_registers, * pguest_registers;
 
+	typedef struct _idt_regs_t
+	{
+		u128 xmm0;
+		u128 xmm1;
+		u128 xmm2;
+		u128 xmm3;
+		u128 xmm4;
+		u128 xmm5;
+		u128 xmm6;
+		u128 xmm7;
+		u128 xmm8;
+		u128 xmm9;
+		u128 xmm10;
+		u128 xmm11;
+		u128 xmm12;
+		u128 xmm13;
+		u128 xmm14;
+		u128 xmm15;
+
+		u64 padding_8b;
+
+		u64 r15;
+		u64 r14;
+		u64 r13;
+		u64 r12;
+		u64 r11;
+		u64 r10;
+		u64 r9;
+		u64 r8;
+		u64 rbp;
+		u64 rdi;
+		u64 rsi;
+		u64 rdx;
+		u64 rcx;
+		u64 rbx;
+		u64 rax;
+
+		u64 error_code;
+		u64 rip;
+		u64 cs_selector;
+		::rflags rflags;
+		u64 rsp;
+		u64 ss_selector;
+	} idt_regs_t, *pidt_regs_t;
+
 	union msr_split
 	{
 		u64 value;
@@ -99,7 +144,7 @@ namespace hv
 
 	union idt_addr_t
 	{
-		u64 addr;
+		void* addr;
 		struct
 		{
 			u64 offset_low : 16;
@@ -429,7 +474,7 @@ namespace hv
 
 	typedef struct _vmx_ctx
 	{
-		u32 vcpu_num;
+		u32 vcpu_count;
 		pvcpu_ctx* vcpus;
 	} vmx_ctx, *pvmx_ctx;
 

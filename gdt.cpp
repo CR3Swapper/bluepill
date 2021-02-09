@@ -1,6 +1,6 @@
-#include "segment_intrin.h"
+#include "gdt.hpp"
 
-namespace segment
+namespace gdt
 {
 	auto get_access_rights(segment_descriptor_64* segment_descriptor) -> vmx_segment_access_rights
 	{
@@ -23,7 +23,7 @@ namespace segment
 	{
 		hv::segment_info_ctx segment_info{};
 
-		const auto segment_descriptor = 
+		const auto segment_descriptor =
 			reinterpret_cast<segment_descriptor_64*>(
 				gdt_value.base_address + (selector.index << SEGMENT_SELECTOR_INDEX_BIT));
 
@@ -54,5 +54,19 @@ namespace segment
 			segment_info.base_addr += ((u64)segment_descriptor->base_address_upper << SEGMENT__BASE_ADDRESS_SHIFT);
 
 		return segment_info;
+	}
+
+	// TODO: make your own GDT.... (and TSS so you can have an IST for each IDT handler...)
+	auto init() -> void
+	{
+		gdt::table[GDT_CS_INDEX].present = true;
+		gdt::table[GDT_CS_INDEX].long_mode = true;
+		gdt::table[GDT_CS_INDEX].descriptor_type = SEGMENT_DESCRIPTOR_TYPE_CODE_OR_DATA;
+		gdt::table[GDT_CS_INDEX].type = SEGMENT_DESCRIPTOR_TYPE_CODE_EXECUTE_READ;
+
+		gdt::table[GDT_DS_INDEX].present = true;
+		gdt::table[GDT_DS_INDEX].long_mode = true;
+		gdt::table[GDT_DS_INDEX].descriptor_type = SEGMENT_DESCRIPTOR_TYPE_CODE_OR_DATA;
+		gdt::table[GDT_DS_INDEX].type = SEGMENT_DESCRIPTOR_TYPE_DATA_READ_WRITE;
 	}
 }

@@ -1,6 +1,6 @@
 #include "vmxlaunch.hpp"
 
-auto vmxlaunch::init_vmcs() -> void
+auto vmxlaunch::init_vmcs(cr3 cr3_value) -> void
 {
 	const auto vcpu = 
 		vmxon::g_vmx_ctx->vcpus[
@@ -9,7 +9,7 @@ auto vmxlaunch::init_vmcs() -> void
 	__vmx_vmclear(&vcpu->vmcs_phys);
 	__vmx_vmptrld(&vcpu->vmcs_phys);
 
-	vmcs::setup_host(&vmxexit_handler, vcpu->host_stack);
+	vmcs::setup_host(&vmxexit_handler, vcpu->host_stack, cr3_value);
 	vmcs::setup_guest();
 	vmcs::setup_controls();
 }

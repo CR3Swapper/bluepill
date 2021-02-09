@@ -27,14 +27,16 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	}
 	case VMX_EXIT_REASON_EXECUTE_XSETBV:
 	{
-		hv::msr_split value;
+		hv::msr_split value{};
 		value.high = regs->rdx;
 		value.low = regs->rax;
 
+		// can also validate the input instead of using 
+		// reimplimented SEH...
 		__try
 		{
 			/*
-				EXCEPTION WARNING!: (will need to handle SEH in my IDT)
+				EXCEPTION WARNING:
 				#GP		If the current privilege level is not 0.
 						If an invalid XCR is specified in ECX.
 						If the value in EDX:EAX sets bits that are reserved in the XCR specified by ECX.
@@ -50,7 +52,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::software_interrupt;
+			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
 			interrupt.valid = true;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
@@ -59,10 +61,12 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	}
 	case VMX_EXIT_REASON_EXECUTE_RDMSR:
 	{
+		// can also validate the input instead of using 
+		// reimplimented SEH...
 		__try
 		{
 			/*
-				EXCEPTION WARNING!: (will need to handle SEH in my IDT)
+				EXCEPTION WARNING:
 				#GP(0)	If the current privilege level is not 0.
 						If the value in ECX specifies a reserved or unimplemented MSR address.
 				#UD	If the LOCK prefix is used.
@@ -76,7 +80,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::software_interrupt;
+			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
 			interrupt.valid = true;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
@@ -89,6 +93,8 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		value.low = regs->rax;
 		value.high = regs->rdx;
 
+		// can also validate the input instead of using 
+		// reimplimented SEH...
 		__try
 		{
 			__writemsr(regs->rcx, value.value);
@@ -96,17 +102,24 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			/*
-				EXCEPTION WARNING!: (will need to handle SEH in my IDT)
+				EXCEPTION WARNING:
 				#GP(0)	If the current privilege level is not 0.
 						If the value in ECX specifies a reserved or unimplemented MSR address.
 				#UD	If the LOCK prefix is used.
 			*/
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::software_interrupt;
+			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
 			interrupt.valid = true;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 		}
+		break;
+	}
+	case VMX_EXIT_REASON_EXECUTE_INVD:
+	{
+		// couldnt find the intrin for this so i just made one...
+		// probably could have used __wbinvd?
+		__invd();
 		break;
 	}
 	case VMX_EXIT_REASON_EXECUTE_VMWRITE:
@@ -119,7 +132,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	case VMX_EXIT_REASON_EXECUTE_VMCALL:
 	{
 		vmentry_interrupt_information interrupt{};
-		interrupt.flags = interruption_type::software_interrupt;
+		interrupt.flags = interruption_type::hardware_exception;
 		interrupt.vector = EXCEPTION_INVALID_OPCODE;
 		interrupt.valid = true;
 		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);

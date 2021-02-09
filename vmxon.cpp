@@ -54,7 +54,7 @@ namespace vmxon
 
 	auto create_vcpus(hv::pvmx_ctx vmx_ctx) -> void
 	{
-		vmx_ctx->vcpu_num = 
+		vmx_ctx->vcpu_count = 
 			KeQueryActiveProcessorCountEx(
 				ALL_PROCESSOR_GROUPS);
 
@@ -62,11 +62,11 @@ namespace vmxon
 		vmx_ctx->vcpus = 
 			reinterpret_cast<hv::pvcpu_ctx*>(
 				ExAllocatePool(NonPagedPool, 
-					sizeof(hv::pvcpu_ctx) * vmx_ctx->vcpu_num));
+					sizeof(hv::pvcpu_ctx) * vmx_ctx->vcpu_count));
 
 		// allocate vcpu for each logical processor along with
 		// vmxon region and vmcs memory for each logical processor...
-		for (auto idx = 0u; idx < g_vmx_ctx->vcpu_num; ++idx)
+		for (auto idx = 0u; idx < g_vmx_ctx->vcpu_count; ++idx)
 		{
 			vmx_ctx->vcpus[idx] =
 				reinterpret_cast<hv::pvcpu_ctx>(
