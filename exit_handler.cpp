@@ -12,7 +12,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		if (regs->rcx == 0xC0FFEE)
 		{
 			regs->rax = 0xC0FFEE;
-			// just a demo...
+			__debugbreak();
 		}
 		else
 		{
@@ -48,6 +48,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 						If the LOCK prefix is used.
 			*/
 			_xsetbv(regs->rcx, value.value);
+			break;
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
@@ -57,7 +58,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.valid = true;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 		}
-		break;
+		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_RDMSR:
 	{
@@ -76,6 +77,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 
 			regs->rdx = result.high;
 			regs->rax = result.low;
+			break;
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
@@ -85,7 +87,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.valid = true;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 		}
-		break;
+		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_WRMSR:
 	{
@@ -98,6 +100,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__try
 		{
 			__writemsr(regs->rcx, value.value);
+			break;
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
@@ -113,7 +116,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.valid = true;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 		}
-		break;
+		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_INVD:
 	{
@@ -136,7 +139,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		interrupt.vector = EXCEPTION_INVALID_OPCODE;
 		interrupt.valid = true;
 		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-		break;
+		return; // dont advance rip...
 	}
 	default:
 		// TODO: check out the vmexit reason and add support for it...

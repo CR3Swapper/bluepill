@@ -5,7 +5,7 @@ auto driver_unload(
 	PDRIVER_OBJECT driver_object
 ) -> void
 {
-	// no unloading this hypervisor... reboot!
+	// no unloading this hv... restart! lol
 	__debugbreak();
 }
 
@@ -21,7 +21,6 @@ auto driver_entry(
 	// setup vcpu structures (vmx on region and vmcs...)
 	vmxon::create_vcpus(vmxon::g_vmx_ctx);
 
-	// setup host address space...
 	cr3 cr3_value;
 	cr3_value.flags = __readcr3();
 	cr3_value.address_of_page_directory =
@@ -44,12 +43,37 @@ auto driver_entry(
 	// vmxroot will have the same "address space" as the current one being executed in...
 	memcpy(&mm::pml4[255], &kernel_pml4[255], sizeof(mm::pml4e) * 255);
 
-	// setup mapping ptes to be present and writable...
+	// setup mapping ptes to be present, writeable, executable, and user supervisor false...
 	for (auto idx = 0u; idx < 254; ++idx)
 	{
 		reinterpret_cast<mm::ppte>(mm::pml4)[idx].present = true;
 		reinterpret_cast<mm::ppte>(mm::pml4)[idx].rw = true;
 	}
+
+	// setup IDT for host....
+	segment_descriptor_register_64 idt_value;
+	__sidt(&idt_value);
+
+	// copy the guest IDT entries...
+	memcpy(idt::table, (void*)idt_value.base_address, idt_value.limit);
+
+	// change gp, pf, and de to vmxroot handlers...
+	idt::table[general_protection] = create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
+	idt::table[page_fault] = create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
+	idt::table[divide_error] = create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
+
+	// change the segment selector to work with vmxroot gdt...
+	for (auto idx = 0u; idx < 255; ++idx)
+	{
+		segment_selector cs{};
+		cs.idx = gdt::idx::cs;
+		cs.request_privilege_level = NULL;
+		cs.table = NULL;
+		idt::table[idx].segment_selector = cs.flags;
+	}
+
+	// used for SEH in vmxroot fault handler...
+	idt::image_base = driver_object->DriverStart;
 
 	// enable vmx operation on all cores...
 	KeIpiGenericCall((PKIPI_BROADCAST_WORKER)&vmxon::init_vmxon, NULL);

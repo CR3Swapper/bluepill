@@ -4,12 +4,12 @@ namespace mm
 {
     auto translate(virt_addr_t virt_addr) -> u64
     {
-
+        return {};
     }
 
-    auto translate(virt_addr_t virt_addr, u64 pml4_phys, map_type type = map_type::src) -> u64
+    auto translate(virt_addr_t virt_addr, u64 pml4_phys, map_type type) -> u64
     {
-
+        return {};
     }
 
     auto map_page(u64 phys_addr, map_type type) -> u64

@@ -131,7 +131,8 @@ namespace hv
 		{
 			u64 offset_low : 16;
 			u64 segment_selector : 16;
-			u64 reserved_0 : 8;
+			u64 ist_index : 3;
+			u64 reserved_0 : 5;
 			u64 gate_type : 4;
 			u64 storage_segment : 1;
 			u64 dpl : 2;
@@ -150,6 +151,30 @@ namespace hv
 			u64 offset_low : 16;
 			u64 offset_middle : 16;
 			u64 offset_high : 32;
+		};
+	};
+
+	typedef struct _tss64
+	{
+		u32 reserved_0;
+		u64 rsp_0;
+		u64 rsp_1;
+		u64 rsp_2;
+		void* interrupt_stack_table[8];
+		u64 reserved_1;
+		u64 reserved_2;
+		u64 io_map_base;
+	} tss64, *ptss64;
+
+	union segment_descriptor_addr_t
+	{
+		void* addr;
+		struct
+		{
+			u64 low : 16;
+			u64 middle : 8;
+			u64 high : 8;
+			u64 upper : 32;
 		};
 	};
 
@@ -444,6 +469,7 @@ namespace hv
 				unsigned int shadow_vmcs_indicator : 1;
 			} bits;
 		} header;
+
 		unsigned int abort_indicator;
 		char data[0x1000 - 2 * sizeof(unsigned)];
 	} vmcs_ctx, *pvmcs_ctx;
@@ -458,18 +484,21 @@ namespace hv
 				unsigned int revision_identifier : 31;
 			} bits;
 		} header;
+
 		char data[0x1000 - 1 * sizeof(unsigned)];
 	} vmxon_region_ctx, *pvmxon_region_ctx;
 
 	typedef struct _vcpu_ctx
 	{
-		pvmcs_ctx vmcs;
-		u64 vmcs_phys;
-
 		pvmxon_region_ctx vmxon;
-		u64 vmxon_phys;
+		pvmcs_ctx vmcs;
 
+		u64 vmcs_phys;
+		u64 vmxon_phys;
 		u64 host_stack;
+
+		tss64 tss;
+		segment_descriptor_64 gdt[8];
 	} vcpu_ctx, * pvcpu_ctx;
 
 	typedef struct _vmx_ctx
@@ -480,6 +509,7 @@ namespace hv
 
 	typedef struct _segment_info_ctx
 	{
+		segment_descriptor_64 segment_descriptor;
 		vmx_segment_access_rights rights;
 		u64 limit;
 		u64 base_addr;

@@ -2,6 +2,7 @@
 #include "hv_types.hpp"
 #include "segment_intrin.h"
 #include "vmxexit_handler.h"
+#include "vmxon.hpp"
 #include "gdt.hpp"
 #include "idt.hpp"
 

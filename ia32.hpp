@@ -15872,7 +15872,7 @@ typedef union
          * of bytes in a segment descriptor) and adds the result to the base address of the GDT or LDT (from the GDTR or LDTR
          * register, respectively).
          */
-        uint16_t index : 13;
+        uint16_t idx : 13;
 #define SEGMENT_SELECTOR_INDEX_BIT                                   3
 #define SEGMENT_SELECTOR_INDEX_FLAG                                  0xFFF8
 #define SEGMENT_SELECTOR_INDEX_MASK                                  0x1FFF
@@ -19030,7 +19030,7 @@ typedef union
         /**
          * [Bits 9:1] Index.
          */
-        uint16_t index : 9;
+        uint16_t idx : 9;
 #define VMCS_COMPONENT_ENCODING_INDEX_BIT                            1
 #define VMCS_COMPONENT_ENCODING_INDEX_FLAG                           0x3FE
 #define VMCS_COMPONENT_ENCODING_INDEX_MASK                           0x1FF
@@ -21196,7 +21196,7 @@ typedef union
          *
          * @note The format of the error code is different for page-fault exceptions (#PF).
          */
-        uint32_t index : 13;
+        uint32_t idx : 13;
 #define EXCEPTION_ERROR_CODE_INDEX_BIT                               3
 #define EXCEPTION_ERROR_CODE_INDEX_FLAG                              0xFFF8
 #define EXCEPTION_ERROR_CODE_INDEX_MASK                              0x1FFF

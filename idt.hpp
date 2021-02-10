@@ -12,7 +12,7 @@ namespace idt
 {
 	__declspec(allocate(".idt")) 
 	inline hv::idt_entry_t table[256];
-
-	auto create_entry(hv::idt_addr_t idt_handler) -> hv::idt_entry_t;
-	auto init() -> u64;
+	inline void* image_base = nullptr; // used for SEH...
+	enum ist_idx : u8 { gp = 5, pf = 6, de = 7};
+	auto create_entry(hv::idt_addr_t idt_handler, u8 ist_index) -> hv::idt_entry_t;
 }

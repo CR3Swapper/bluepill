@@ -5,62 +5,118 @@ namespace vmcs
 	auto setup_host(void* host_rip, u64 host_rsp, cr3 cr3_value) -> void
 	{
 		segment_descriptor_register_64 gdt_value;
-		segment_descriptor_register_64 idt_value;
-
-		__sidt(&idt_value);
 		_sgdt(&gdt_value);
 
 		__vmx_vmwrite(VMCS_HOST_CR0, __readcr0());
 		__vmx_vmwrite(VMCS_HOST_CR3, cr3_value.flags);
 		__vmx_vmwrite(VMCS_HOST_CR4, __readcr4());
 
-		// stack growns down...
 		__vmx_vmwrite(VMCS_HOST_RSP, host_rsp + (PAGE_SIZE * HOST_STACK_PAGES));
 		__vmx_vmwrite(VMCS_HOST_RIP, reinterpret_cast<u64>(host_rip));
+		
+		const auto current_vcpu = 
+			vmxon::g_vmx_ctx->vcpus[KeGetCurrentProcessorNumber()];
 
-		__vmx_vmwrite(VMCS_HOST_GDTR_BASE, gdt_value.base_address);
-		__vmx_vmwrite(VMCS_HOST_IDTR_BASE, idt_value.base_address);
+		__vmx_vmwrite(VMCS_HOST_GDTR_BASE, reinterpret_cast<u64>(current_vcpu->gdt));
+		__vmx_vmwrite(VMCS_HOST_IDTR_BASE, reinterpret_cast<u64>(idt::table));
 
-		// manual says that the priv level must be 0 and 
-		// that the table flag also needs to be 0 so it uses the GDT...
 		segment_selector es{ reades() };
 		es.request_privilege_level = NULL;
 		es.table = NULL;
+
+		const auto [es_descriptor, es_rights, es_limit, es_base] = 
+			gdt::get_info(gdt_value, es);
+
+		es.idx = gdt::idx::es;
+		current_vcpu->gdt[gdt::idx::es] = es_descriptor;
+		__vmx_vmwrite(VMCS_HOST_ES_SELECTOR, es.flags);
 
 		segment_selector cs{ readcs() };
 		cs.request_privilege_level = NULL;
 		cs.table = NULL;
 
+		const auto [cs_descriptor, cs_rights, cs_limit, cs_base] = 
+			gdt::get_info(gdt_value, cs);
+
+		cs.idx = gdt::idx::cs;
+		current_vcpu->gdt[gdt::idx::cs] = cs_descriptor;
+		__vmx_vmwrite(VMCS_HOST_CS_SELECTOR, cs.flags);
+
 		segment_selector ds{ readds() };
 		ds.request_privilege_level = NULL;
 		ds.table = NULL;
+
+		const auto [ds_descriptor, ds_rights, ds_limit, ds_base] = 
+			gdt::get_info(gdt_value, ds);
+
+		ds.idx = gdt::idx::ds;
+		current_vcpu->gdt[gdt::idx::ds] = ds_descriptor;
+		__vmx_vmwrite(VMCS_HOST_DS_SELECTOR, ds.flags);
 
 		segment_selector fs{ readfs() };
 		fs.request_privilege_level = NULL;
 		fs.table = NULL;
 
+		const auto [fs_descriptor, fs_rights, fs_limit, fs_base] =
+			gdt::get_info(gdt_value, fs);
+
+		fs.idx = gdt::idx::fs;
+		current_vcpu->gdt[gdt::idx::fs] = fs_descriptor;
+		__vmx_vmwrite(VMCS_HOST_FS_SELECTOR, fs.flags);
+		__vmx_vmwrite(VMCS_HOST_GS_BASE, __readmsr(IA32_FS_BASE));
+
 		segment_selector gs{ readgs() };
 		gs.request_privilege_level = NULL;
 		gs.table = NULL;
+
+		const auto [gs_descriptor, gs_rights, gs_limit, gs_base] =
+			gdt::get_info(gdt_value, gs);
+
+		gs.idx = gdt::idx::gs;
+		current_vcpu->gdt[gdt::idx::gs] = gs_descriptor;
+		__vmx_vmwrite(VMCS_HOST_GS_SELECTOR, gs.flags);
+		__vmx_vmwrite(VMCS_HOST_GS_BASE, __readmsr(IA32_GS_BASE));
 
 		segment_selector ss{ readss() };
 		ss.request_privilege_level = NULL;
 		ss.table = NULL;
 
+		const auto [ss_descriptor, ss_rights, ss_limit, ss_base] =
+			gdt::get_info(gdt_value, ss);
+
+		ss.idx = gdt::idx::ss;
+		current_vcpu->gdt[gdt::idx::ss] = ss_descriptor;
+		__vmx_vmwrite(VMCS_HOST_SS_SELECTOR, ss.flags);
+
 		segment_selector tr{ readtr() };
 		tr.request_privilege_level = NULL;
 		tr.table = NULL;
 
-		__vmx_vmwrite(VMCS_HOST_ES_SELECTOR, es.flags);
-		__vmx_vmwrite(VMCS_HOST_CS_SELECTOR, cs.flags);
-		__vmx_vmwrite(VMCS_HOST_DS_SELECTOR, ds.flags);
-		__vmx_vmwrite(VMCS_HOST_FS_SELECTOR, fs.flags);
-		__vmx_vmwrite(VMCS_HOST_GS_SELECTOR, gs.flags);
-		__vmx_vmwrite(VMCS_HOST_SS_SELECTOR, ss.flags);
+		const auto [tr_descriptor, tr_rights, tr_limit, tr_base] =
+			gdt::get_info(gdt_value, tr);
+
+		tr.idx = gdt::idx::tr;
+		current_vcpu->gdt[gdt::idx::tr] = tr_descriptor;
 		__vmx_vmwrite(VMCS_HOST_TR_SELECTOR, tr.flags);
 
-		// FS base is 0 on windows so no need to read it...
-		__vmx_vmwrite(VMCS_HOST_GS_BASE, __readmsr(IA32_GS_BASE));
+		// setup interrupt stack table...
+		// windows is using 1-4... im using 5-7...
+		memcpy(&current_vcpu->tss, (void*)tr_base, sizeof hv::tss64);
+
+		current_vcpu->tss.interrupt_stack_table[5] = 
+			ExAllocatePool(NonPagedPool, PAGE_SIZE * HOST_STACK_PAGES);
+
+		current_vcpu->tss.interrupt_stack_table[6] = 
+			ExAllocatePool(NonPagedPool, PAGE_SIZE * HOST_STACK_PAGES);
+
+		current_vcpu->tss.interrupt_stack_table[7] = 
+			ExAllocatePool(NonPagedPool, PAGE_SIZE * HOST_STACK_PAGES);
+
+		hv::segment_descriptor_addr_t tss_addr{ &current_vcpu->tss };
+		current_vcpu->gdt[gdt::idx::tr].base_address_upper = tss_addr.upper;
+		current_vcpu->gdt[gdt::idx::tr].base_address_high = tss_addr.high;
+		current_vcpu->gdt[gdt::idx::tr].base_address_middle = tss_addr.middle;
+		current_vcpu->gdt[gdt::idx::tr].base_address_low = tss_addr.low;
 	}
 
 	auto setup_guest() -> void
@@ -85,7 +141,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_RFLAGS, __readeflags());
 		__vmx_vmwrite(VMCS_GUEST_DR7, __readdr(7));
 
-		const auto [es_rights, es_limit, es_base] = 
+		const auto [es_descriptor, es_rights, es_limit, es_base] =
 			gdt::get_info(gdt_value, segment_selector{ reades() });
 
 		__vmx_vmwrite(VMCS_GUEST_ES_BASE, es_base);
@@ -93,7 +149,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_ES_SELECTOR, reades());
 		__vmx_vmwrite(VMCS_GUEST_ES_ACCESS_RIGHTS, es_rights.flags);
 
-		const auto [fs_rights, fs_limit, fs_base] = 
+		const auto [fs_descriptor, fs_rights, fs_limit, fs_base] =
 			gdt::get_info(gdt_value, segment_selector{ readfs() });
 
 		__vmx_vmwrite(VMCS_GUEST_FS_BASE, fs_base);
@@ -101,7 +157,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_FS_SELECTOR, readfs());
 		__vmx_vmwrite(VMCS_GUEST_FS_ACCESS_RIGHTS, fs_rights.flags);
 
-		const auto [gs_rights, gs_limit, gs_base] = 
+		const auto [gs_descriptor, gs_rights, gs_limit, gs_base] =
 			gdt::get_info(gdt_value, segment_selector{ readgs() });
 
 		__vmx_vmwrite(VMCS_GUEST_GS_BASE, gs_base);
@@ -109,7 +165,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_GS_SELECTOR, readgs());
 		__vmx_vmwrite(VMCS_GUEST_GS_ACCESS_RIGHTS, gs_rights.flags);
 
-		const auto [ss_rights, ss_limit, ss_base] =
+		const auto [ss_descriptor, ss_rights, ss_limit, ss_base] =
 			gdt::get_info(gdt_value, segment_selector{ readss() });
 
 		__vmx_vmwrite(VMCS_GUEST_SS_BASE, ss_base);
@@ -117,7 +173,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_SS_SELECTOR, readss());
 		__vmx_vmwrite(VMCS_GUEST_SS_ACCESS_RIGHTS, ss_rights.flags);
 
-		const auto [cs_rights, cs_limit, cs_base] =
+		const auto [cs_descriptor, cs_rights, cs_limit, cs_base] =
 			gdt::get_info(gdt_value, segment_selector{ readcs() });
 
 		__vmx_vmwrite(VMCS_GUEST_CS_BASE, cs_base);
@@ -125,7 +181,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_CS_SELECTOR, readcs());
 		__vmx_vmwrite(VMCS_GUEST_CS_ACCESS_RIGHTS, cs_rights.flags);
 
-		const auto [ds_rights, ds_limit, ds_base] =
+		const auto [ds_descriptor, ds_rights, ds_limit, ds_base] =
 			gdt::get_info(gdt_value, segment_selector{ readds() });
 
 		__vmx_vmwrite(VMCS_GUEST_DS_BASE, ds_base);
@@ -133,7 +189,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_DS_SELECTOR, readds());
 		__vmx_vmwrite(VMCS_GUEST_DS_ACCESS_RIGHTS, ds_rights.flags);
 
-		const auto [tr_rights, tr_limit, tr_base] =
+		const auto [tr_descriptor, tr_rights, tr_limit, tr_base] =
 			gdt::get_info(gdt_value, segment_selector{ readtr() });
 
 		__vmx_vmwrite(VMCS_GUEST_TR_BASE, tr_base);
@@ -141,7 +197,7 @@ namespace vmcs
 		__vmx_vmwrite(VMCS_GUEST_TR_SELECTOR, readtr());
 		__vmx_vmwrite(VMCS_GUEST_TR_ACCESS_RIGHTS, tr_rights.flags);
 
-		const auto [ldt_rights, ldt_limit, ldt_base] =
+		const auto [ldt_descriptor, ldt_rights, ldt_limit, ldt_base] =
 			gdt::get_info(gdt_value, segment_selector{ readldt() });
 
 		__vmx_vmwrite(VMCS_GUEST_LDTR_BASE, ldt_base);

@@ -25,13 +25,14 @@ namespace gdt
 
 		const auto segment_descriptor =
 			reinterpret_cast<segment_descriptor_64*>(
-				gdt_value.base_address + (selector.index << SEGMENT_SELECTOR_INDEX_BIT));
+				gdt_value.base_address + (selector.idx << SEGMENT_SELECTOR_INDEX_BIT));
 
 		// access rights are spread out over the segment 
 		// descriptor so those need to picked out and assigned 
 		// to the vmx segment access rights variable...
 		segment_info.limit = __segmentlimit(selector.flags);
 		segment_info.rights = get_access_rights(segment_descriptor);
+		segment_info.segment_descriptor = *segment_descriptor;
 
 		// base address of a segment is spread over the segment descriptor in 3 places. 2 parts of the 
 		// address are 8 bits each (1 byte each) and the lowest part of the address is 2 bytes (4 bytes in total)...
@@ -54,19 +55,5 @@ namespace gdt
 			segment_info.base_addr += ((u64)segment_descriptor->base_address_upper << SEGMENT__BASE_ADDRESS_SHIFT);
 
 		return segment_info;
-	}
-
-	// TODO: make your own GDT.... (and TSS so you can have an IST for each IDT handler...)
-	auto init() -> void
-	{
-		gdt::table[GDT_CS_INDEX].present = true;
-		gdt::table[GDT_CS_INDEX].long_mode = true;
-		gdt::table[GDT_CS_INDEX].descriptor_type = SEGMENT_DESCRIPTOR_TYPE_CODE_OR_DATA;
-		gdt::table[GDT_CS_INDEX].type = SEGMENT_DESCRIPTOR_TYPE_CODE_EXECUTE_READ;
-
-		gdt::table[GDT_DS_INDEX].present = true;
-		gdt::table[GDT_DS_INDEX].long_mode = true;
-		gdt::table[GDT_DS_INDEX].descriptor_type = SEGMENT_DESCRIPTOR_TYPE_CODE_OR_DATA;
-		gdt::table[GDT_DS_INDEX].type = SEGMENT_DESCRIPTOR_TYPE_DATA_READ_WRITE;
 	}
 }
