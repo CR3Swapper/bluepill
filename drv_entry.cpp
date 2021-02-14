@@ -5,7 +5,7 @@ auto driver_unload(
 	PDRIVER_OBJECT driver_object
 ) -> void
 {
-	// no unloading this hv... restart! lol
+	// no unloading this hv... restart...
 	__debugbreak();
 }
 
@@ -61,16 +61,6 @@ auto driver_entry(
 	idt::table[general_protection] = create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
 	idt::table[page_fault] = create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
 	idt::table[divide_error] = create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
-
-	// change the segment selector to work with vmxroot gdt...
-	for (auto idx = 0u; idx < 255; ++idx)
-	{
-		segment_selector cs{};
-		cs.idx = gdt::idx::cs;
-		cs.request_privilege_level = NULL;
-		cs.table = NULL;
-		idt::table[idx].segment_selector = cs.flags;
-	}
 
 	// used for SEH in vmxroot fault handler...
 	idt::image_base = driver_object->DriverStart;

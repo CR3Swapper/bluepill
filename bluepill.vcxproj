@@ -83,6 +83,7 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="debug.cpp" />
     <ClCompile Include="drv_entry.cpp" />
     <ClCompile Include="exit_handler.cpp" />
     <ClCompile Include="gdt.cpp" />
@@ -93,6 +94,7 @@
     <ClCompile Include="vmxon.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="debug.hpp" />
     <ClInclude Include="gdt.hpp" />
     <ClInclude Include="ia32.hpp" />
     <ClInclude Include="idt.hpp" />

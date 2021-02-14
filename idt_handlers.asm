@@ -4,7 +4,6 @@ extern seh_handler : proc
 __pf_handler proc
 __de_handler proc
 __gp_handler proc
-	int 3
 	push rax
 	push rbx
 	push rcx

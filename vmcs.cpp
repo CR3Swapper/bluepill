@@ -17,7 +17,7 @@ namespace vmcs
 		const auto current_vcpu = 
 			vmxon::g_vmx_ctx->vcpus[KeGetCurrentProcessorNumber()];
 
-		__vmx_vmwrite(VMCS_HOST_GDTR_BASE, reinterpret_cast<u64>(current_vcpu->gdt));
+		__vmx_vmwrite(VMCS_HOST_GDTR_BASE, gdt_value.base_address);
 		__vmx_vmwrite(VMCS_HOST_IDTR_BASE, reinterpret_cast<u64>(idt::table));
 
 		segment_selector es{ reades() };

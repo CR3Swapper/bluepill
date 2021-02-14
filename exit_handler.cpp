@@ -12,7 +12,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		if (regs->rcx == 0xC0FFEE)
 		{
 			regs->rax = 0xC0FFEE;
-			__debugbreak();
+			*(u8*)0x0 = 0xDE;
 		}
 		else
 		{
