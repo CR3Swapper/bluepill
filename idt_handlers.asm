@@ -4,7 +4,6 @@ extern seh_handler : proc
 __de_handler proc
 __pf_handler proc
 __gp_handler proc
-	cli
 	push rax
 	push rbx
 	push rcx
@@ -43,7 +42,6 @@ __gp_handler proc
 	pop rax
 	add rsp, 8	; remove exception code on the stack...
 
-	sti
 	iretq
 __gp_handler endp
 __pf_handler endp
