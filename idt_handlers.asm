@@ -4,6 +4,7 @@ extern seh_handler : proc
 __de_handler proc
 __pf_handler proc
 __gp_handler proc
+	cli
 	push rax
 	push rbx
 	push rcx
@@ -20,46 +21,10 @@ __gp_handler proc
 	push r14
 	push r15
 
-	sub rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment... (you dont need any of these...)
-	movaps [rsp], xmm0
-	movaps [rsp + 010h], xmm1
-	movaps [rsp + 020h], xmm2
-	movaps [rsp + 030h], xmm3
-	movaps [rsp + 040h], xmm4
-	movaps [rsp + 050h], xmm5
-	movaps [rsp + 060h], xmm6
-	movaps [rsp + 070h], xmm7
-	movaps [rsp + 080h], xmm8
-	movaps [rsp + 090h], xmm9
-	movaps [rsp + 0A0h], xmm10
-	movaps [rsp + 0B0h], xmm11
-	movaps [rsp + 0C0h], xmm12
-	movaps [rsp + 0D0h], xmm13
-	movaps [rsp + 0E0h], xmm14
-	movaps [rsp + 0F0h], xmm15
-
 	mov rcx, rsp
 	sub rsp, 20h
 	call seh_handler
 	add rsp, 20h
-
-	movups xmm0, [rsp]
-	movups xmm1, [rsp + 010h]
-	movups xmm2, [rsp + 020h]
-	movups xmm3, [rsp + 030h]
-	movups xmm4, [rsp + 040h]
-	movups xmm5, [rsp + 050h]
-	movups xmm6, [rsp + 060h]
-	movups xmm7, [rsp + 070h]
-	movups xmm8, [rsp + 080h]
-	movups xmm9, [rsp + 090h]
-	movups xmm10, [rsp + 0A0h]
-	movups xmm11, [rsp + 0B0h]
-	movups xmm12, [rsp + 0C0h]
-	movups xmm13, [rsp + 0D0h]
-	movups xmm14, [rsp + 0E0h]
-	movups xmm15, [rsp + 0F0h]
-	add rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment... (you dont need any of these...)
 
 	pop r15
 	pop r14
@@ -76,8 +41,9 @@ __gp_handler proc
 	pop rcx
 	pop rbx
 	pop rax
-	add rsp, 8
+	add rsp, 8	; remove exception code on the stack...
 
+	sti
 	iretq
 __gp_handler endp
 __pf_handler endp

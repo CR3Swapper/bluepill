@@ -254,25 +254,6 @@ namespace hv
 
 	typedef struct _idt_regs_t
 	{
-		u128 xmm0;
-		u128 xmm1;
-		u128 xmm2;
-		u128 xmm3;
-		u128 xmm4;
-		u128 xmm5;
-		u128 xmm6;
-		u128 xmm7;
-		u128 xmm8;
-		u128 xmm9;
-		u128 xmm10;
-		u128 xmm11;
-		u128 xmm12;
-		u128 xmm13;
-		u128 xmm14;
-		u128 xmm15;
-
-		u64 padding_8b;
-
 		u64 r15;
 		u64 r14;
 		u64 r13;
