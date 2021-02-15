@@ -1,18 +1,7 @@
 #include "vmxlaunch.hpp"
 #include "idt.hpp"
 
-auto driver_unload(
-	PDRIVER_OBJECT driver_object
-) -> void
-{
-	// no unloading this hv... restart...
-	__debugbreak();
-}
-
-auto driver_entry(
-	PDRIVER_OBJECT driver_object,
-	PUNICODE_STRING registry_path
-) -> NTSTATUS
+auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> NTSTATUS
 {
 	vmxon::g_vmx_ctx = 
 		reinterpret_cast<hv::pvmx_ctx>(
@@ -58,9 +47,8 @@ auto driver_entry(
 	memcpy(idt::table, (void*)idt_value.base_address, idt_value.limit);
 
 	// change gp, pf, and de to vmxroot handlers...
-	idt::table[general_protection] = create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
-	idt::table[page_fault] = create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
-	idt::table[divide_error] = create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
+	idt::table[general_protection] = idt::create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
+	idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
 
 	// used for SEH in vmxroot fault handler...
 	idt::image_base = driver_object->DriverStart;
@@ -73,7 +61,5 @@ auto driver_entry(
 
 	// vmxlaunch for all cores...
 	KeIpiGenericCall((PKIPI_BROADCAST_WORKER)&vmxlaunch::launch, NULL);
-
-	driver_object->DriverUnload = &driver_unload;
 	return STATUS_SUCCESS;
 }

@@ -74,6 +74,10 @@ namespace vmxon
 					ExAllocatePool(NonPagedPool,
 						PAGE_SIZE * HOST_STACK_PAGES));
 
+			vmx_ctx->vcpus[idx]->gdt = 
+				reinterpret_cast<segment_descriptor_64*>(
+					ExAllocatePool(NonPagedPool, PAGE_SIZE));
+
 			RtlZeroMemory(reinterpret_cast<void*>(
 				vmx_ctx->vcpus[idx]->host_stack), PAGE_SIZE * HOST_STACK_PAGES);
 
@@ -84,15 +88,9 @@ namespace vmxon
 
 	auto init_vmxon() -> void
 	{
-		hv::ia32_feature_control_msr_t feature_msr = { 0 };
 		hv::cr_fixed_t cr_fixed;
 		hv::cr0_t cr0 = { 0 };
 		hv::cr4_t cr4 = { 0 };
-
-		feature_msr.control = __readmsr(IA32_FEATURE_CONTROL);
-		feature_msr.bits.vmxon_outside_smx = true;
-		feature_msr.bits.lock = true;
-		__writemsr(IA32_FEATURE_CONTROL, feature_msr.control);
 
 		cr_fixed.all = __readmsr(IA32_VMX_CR0_FIXED0);
 		cr0.flags = __readcr0();
@@ -106,10 +104,6 @@ namespace vmxon
 		cr4.flags |= cr_fixed.split.low;
 		cr_fixed.all = __readmsr(IA32_VMX_CR4_FIXED1);
 		cr4.flags &= cr_fixed.split.low;
-		__writecr4(cr4.flags);
-
-		cr4.flags = __readcr4();
-		cr4.vmx_enable = true;
 		__writecr4(cr4.flags);
 
 		const auto vmxon_result = 

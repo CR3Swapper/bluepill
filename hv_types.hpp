@@ -2,6 +2,7 @@
 #include <ntifs.h>
 #include <intrin.h>
 #include "ia32.hpp"
+#include <minwindef.h>
 
 using u8 = unsigned char;
 using u16 = unsigned short;
@@ -28,6 +29,188 @@ extern "C" void _sgdt(void*);
 
 #define HOST_STACK_PAGES 6
 #define HOST_STACK_SIZE PAGE_SIZE * HOST_STACK_PAGES
+
+// Export Directory
+#define IMAGE_DIRECTORY_ENTRY_EXPORT         0
+// Import Directory
+#define IMAGE_DIRECTORY_ENTRY_IMPORT         1
+// Resource Directory
+#define IMAGE_DIRECTORY_ENTRY_RESOURCE       2
+// Exception Directory
+#define IMAGE_DIRECTORY_ENTRY_EXCEPTION      3
+// Security Directory
+#define IMAGE_DIRECTORY_ENTRY_SECURITY       4
+// Base Relocation Table
+#define IMAGE_DIRECTORY_ENTRY_BASERELOC      5
+// Debug Directory
+#define IMAGE_DIRECTORY_ENTRY_DEBUG          6
+// Description String
+#define IMAGE_DIRECTORY_ENTRY_COPYRIGHT      7
+// Machine Value (MIPS GP)
+#define IMAGE_DIRECTORY_ENTRY_GLOBALPTR      8
+// TLS Directory
+#define IMAGE_DIRECTORY_ENTRY_TLS            9
+// Load Configuration Directory
+#define IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG    10
+
+#define UNW_FLAG_NHANDLER  0
+#define UNW_FLAG_EHANDLER  1
+#define UNW_FLAG_UHANDLER  2
+#define UNW_FLAG_CHAININFO 4
+
+typedef struct _IMAGE_DOS_HEADER {  // DOS .EXE header
+	USHORT e_magic;         // Magic number
+	USHORT e_cblp;          // Bytes on last page of file
+	USHORT e_cp;            // Pages in file
+	USHORT e_crlc;          // Relocations
+	USHORT e_cparhdr;       // Size of header in paragraphs
+	USHORT e_minalloc;      // Minimum extra paragraphs needed
+	USHORT e_maxalloc;      // Maximum extra paragraphs needed
+	USHORT e_ss;            // Initial (relative) SS value
+	USHORT e_sp;            // Initial SP value
+	USHORT e_csum;          // Checksum
+	USHORT e_ip;            // Initial IP value
+	USHORT e_cs;            // Initial (relative) CS value
+	USHORT e_lfarlc;        // File address of relocation table
+	USHORT e_ovno;          // Overlay number
+	USHORT e_res[4];        // Reserved words
+	USHORT e_oemid;         // OEM identifier (for e_oeminfo)
+	USHORT e_oeminfo;       // OEM information; e_oemid specific
+	USHORT e_res2[10];      // Reserved words
+	LONG   e_lfanew;        // File address of new exe header
+} IMAGE_DOS_HEADER, * PIMAGE_DOS_HEADER;
+
+typedef struct _IMAGE_FILE_HEADER {
+	short  Machine;
+	short  NumberOfSections;
+	unsigned TimeDateStamp;
+	unsigned PointerToSymbolTable;
+	unsigned NumberOfSymbols;
+	short  SizeOfOptionalHeader;
+	short  Characteristics;
+} IMAGE_FILE_HEADER, * PIMAGE_FILE_HEADER;
+
+typedef struct _IMAGE_DATA_DIRECTORY {
+	unsigned VirtualAddress;
+	unsigned Size;
+} IMAGE_DATA_DIRECTORY, * PIMAGE_DATA_DIRECTORY;
+
+typedef struct _IMAGE_OPTIONAL_HEADER64 {
+	short                 Magic;
+	unsigned char                 MajorLinkerVersion;
+	unsigned char                 MinorLinkerVersion;
+	unsigned                SizeOfCode;
+	unsigned                SizeOfInitializedData;
+	unsigned                SizeOfUninitializedData;
+	unsigned                AddressOfEntryPoint;
+	unsigned                BaseOfCode;
+	ULONGLONG            ImageBase;
+	unsigned                SectionAlignment;
+	unsigned                FileAlignment;
+	short                 MajorOperatingSystemVersion;
+	short                 MinorOperatingSystemVersion;
+	short                 MajorImageVersion;
+	short                 MinorImageVersion;
+	short                 MajorSubsystemVersion;
+	short                 MinorSubsystemVersion;
+	unsigned                Win32VersionValue;
+	unsigned                SizeOfImage;
+	unsigned                SizeOfHeaders;
+	unsigned                CheckSum;
+	short                 Subsystem;
+	short                 DllCharacteristics;
+	ULONGLONG            SizeOfStackReserve;
+	ULONGLONG            SizeOfStackCommit;
+	ULONGLONG            SizeOfHeapReserve;
+	ULONGLONG            SizeOfHeapCommit;
+	unsigned                 LoaderFlags;
+	unsigned                NumberOfRvaAndSizes;
+	IMAGE_DATA_DIRECTORY DataDirectory[16];
+} IMAGE_OPTIONAL_HEADER64, * PIMAGE_OPTIONAL_HEADER64;
+
+typedef struct _IMAGE_NT_HEADERS64 {
+	unsigned                   Signature;
+	IMAGE_FILE_HEADER       FileHeader;
+	IMAGE_OPTIONAL_HEADER64 OptionalHeader;
+} IMAGE_NT_HEADERS64, * PIMAGE_NT_HEADERS64;
+
+typedef struct _IMAGE_IMPORT_DESCRIPTOR {
+	union {
+		unsigned long   Characteristics;            // 0 for terminating null import descriptor
+		unsigned long   OriginalFirstThunk;         // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+	} DUMMYUNIONNAME;
+	unsigned long   TimeDateStamp;                  // 0 if not bound,
+											// -1 if bound, and real date\time stamp
+											//     in IMAGE_DIRECTORY_ENTRY_BOUND_IMPORT (new BIND)
+											// O.W. date/time stamp of DLL bound to (Old BIND)
+
+	unsigned long   ForwarderChain;                 // -1 if no forwarders
+	unsigned long   Name;
+	unsigned long   FirstThunk;                     // RVA to IAT (if bound this IAT has actual addresses)
+} IMAGE_IMPORT_DESCRIPTOR;
+typedef IMAGE_IMPORT_DESCRIPTOR UNALIGNED* PIMAGE_IMPORT_DESCRIPTOR;
+
+typedef struct _IMAGE_IMPORT_BY_NAME {
+	unsigned long    Hint;
+	CHAR   Name[1];
+} IMAGE_IMPORT_BY_NAME, * PIMAGE_IMPORT_BY_NAME;
+
+typedef struct _IMAGE_THUNK_DATA64 {
+	union {
+		ULONGLONG ForwarderString;  // PBYTE 
+		ULONGLONG Function;         // PDWORD
+		ULONGLONG Ordinal;
+		ULONGLONG AddressOfData;    // PIMAGE_IMPORT_BY_NAME
+	} u1;
+} IMAGE_THUNK_DATA64, * PIMAGE_THUNK_DATA64;
+typedef PIMAGE_THUNK_DATA64             PIMAGE_THUNK_DATA;
+
+typedef struct _SCOPE_RECORD {
+	UINT32 BeginAddress;
+	UINT32 EndAddress;
+	UINT32 HandlerAddress;
+	UINT32 JumpTarget;
+} SCOPE_RECORD;
+
+typedef struct _SCOPE_TABLE {
+	UINT32 Count;
+	SCOPE_RECORD ScopeRecords[1];
+} SCOPE_TABLE;
+
+typedef struct _RUNTIME_FUNCTION {
+	UINT32 BeginAddress;
+	UINT32 EndAddress;
+	UINT32 UnwindData;
+} RUNTIME_FUNCTION;
+
+#pragma warning(push)
+#pragma warning(disable : 4200)
+#pragma warning(disable : 4201)
+#pragma warning(disable : 4214)
+typedef union _UNWIND_CODE {
+	UINT8 CodeOffset;
+	UINT8 UnwindOp : 4;
+	UINT8 OpInfo : 4;
+	UINT16 FrameOffset;
+} UNWIND_CODE;
+
+typedef struct _UNWIND_INFO {
+	UINT8 Version : 3;
+	UINT8 Flags : 5;
+	UINT8 SizeOfProlog;
+	UINT8 CountOfCodes;
+	UINT8 FrameRegister : 4;
+	UINT8 FrameOffset : 4;
+	UNWIND_CODE UnwindCode[1];
+
+	union {
+		UINT32 ExceptionHandler;
+		UINT32 FunctionEntry;
+	};
+
+	UINT32 ExceptionData[];
+} UNWIND_INFO;
+#pragma warning(pop)
 
 namespace hv
 {
@@ -133,8 +316,7 @@ namespace hv
 			u64 segment_selector : 16;
 			u64 ist_index : 3;
 			u64 reserved_0 : 5;
-			u64 gate_type : 4;
-			u64 storage_segment : 1;
+			u64 gate_type : 5;
 			u64 dpl : 2;
 			u64 present : 1;
 			u64 offset_middle : 16;
@@ -156,14 +338,12 @@ namespace hv
 
 	typedef struct _tss64
 	{
-		u32 reserved_0;
-		u64 rsp_0;
-		u64 rsp_1;
-		u64 rsp_2;
-		void* interrupt_stack_table[8];
+		u32 reserved;
+		u64 privilege_stacks[3];
 		u64 reserved_1;
-		u64 reserved_2;
-		u64 io_map_base;
+		u64 interrupt_stack_table[7];
+		u16 reserved_2;
+		u16 iomap_base;
 	} tss64, *ptss64;
 
 	union segment_descriptor_addr_t
@@ -492,13 +672,12 @@ namespace hv
 	{
 		pvmxon_region_ctx vmxon;
 		pvmcs_ctx vmcs;
-
 		u64 vmcs_phys;
 		u64 vmxon_phys;
 		u64 host_stack;
 
 		tss64 tss;
-		segment_descriptor_64 gdt[8];
+		segment_descriptor_64* gdt;
 	} vcpu_ctx, * pvcpu_ctx;
 
 	typedef struct _vmx_ctx

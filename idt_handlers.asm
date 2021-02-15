@@ -2,7 +2,6 @@ extern seh_handler : proc
 
 .code
 __pf_handler proc
-__de_handler proc
 __gp_handler proc
 	push rax
 	push rbx
@@ -20,7 +19,7 @@ __gp_handler proc
 	push r14
 	push r15
 
-	sub rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment...
+	sub rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment... (you dont need any of these...)
 	movaps [rsp], xmm0
 	movaps [rsp + 010h], xmm1
 	movaps [rsp + 020h], xmm2
@@ -59,7 +58,7 @@ __gp_handler proc
 	movups xmm13, [rsp + 0D0h]
 	movups xmm14, [rsp + 0E0h]
 	movups xmm15, [rsp + 0F0h]
-	add rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment...
+	add rsp, 0108h ; 16 xmm registers... and +8 bytes for alignment... (you dont need any of these...)
 
 	pop r15
 	pop r14
@@ -80,6 +79,5 @@ __gp_handler proc
 
 	iretq
 __gp_handler endp
-__de_handler endp
 __pf_handler endp
 end

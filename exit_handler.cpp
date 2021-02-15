@@ -11,8 +11,15 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	{
 		if (regs->rcx == 0xC0FFEE)
 		{
-			regs->rax = 0xC0FFEE;
-			*(u8*)0x0 = 0xDE;
+			__try
+			{
+				*(u8*)0x0 = 0xDE;
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+				regs->rax = 0xC0FFEE;
+				break;
+			}
 		}
 		else
 		{
@@ -31,8 +38,6 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		value.high = regs->rdx;
 		value.low = regs->rax;
 
-		// can also validate the input instead of using 
-		// reimplimented SEH...
 		__try
 		{
 			/*
@@ -62,8 +67,6 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	}
 	case VMX_EXIT_REASON_EXECUTE_RDMSR:
 	{
-		// can also validate the input instead of using 
-		// reimplimented SEH...
 		__try
 		{
 			/*
@@ -95,8 +98,6 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		value.low = regs->rax;
 		value.high = regs->rdx;
 
-		// can also validate the input instead of using 
-		// reimplimented SEH...
 		__try
 		{
 			__writemsr(regs->rcx, value.value);

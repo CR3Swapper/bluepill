@@ -1,4 +1,5 @@
 #include <iostream>
+#include <intrin.h>
 #include "hypercall.h"
 
 int main()

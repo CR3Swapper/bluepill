@@ -29,13 +29,13 @@
     <ClCompile Include="idt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gdt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="drv_entry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gdt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,10 +70,10 @@
     <ClInclude Include="invd.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gdt.hpp">
+    <ClInclude Include="debug.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debug.hpp">
+    <ClInclude Include="gdt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
