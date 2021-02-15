@@ -50,8 +50,6 @@ namespace vmcs
 		tr.request_privilege_level = NULL;
 		tr.table = NULL;
 		__vmx_vmwrite(VMCS_HOST_TR_SELECTOR, tr.flags);
-
-
 	}
 
 	auto setup_guest() -> void

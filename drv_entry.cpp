@@ -49,6 +49,7 @@ auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> N
 	// change gp, pf, and de to vmxroot handlers...
 	idt::table[general_protection] = idt::create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
 	idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
+	idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
 
 	// used for SEH in vmxroot fault handler...
 	idt::image_base = driver_object->DriverStart;

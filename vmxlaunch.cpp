@@ -29,6 +29,10 @@ auto vmxlaunch::init_vmcs(cr3 cr3_value) -> void
 		reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
 			PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
 
+	vcpu->tss.interrupt_stack_table[idt::ist_idx::de] =
+		reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
+			PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
+
 	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_upper = tss.upper;
 	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_high = tss.high;
 	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_middle = tss.middle;

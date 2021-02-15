@@ -1,6 +1,7 @@
 extern seh_handler : proc
 
 .code
+__de_handler proc
 __pf_handler proc
 __gp_handler proc
 	push rax
@@ -80,4 +81,5 @@ __gp_handler proc
 	iretq
 __gp_handler endp
 __pf_handler endp
+__de_handler endp
 end

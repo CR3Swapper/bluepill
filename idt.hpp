@@ -6,6 +6,7 @@
 #pragma section(".idt", read, write)
 extern "C" void __gp_handler(void);
 extern "C" void __pf_handler(void);
+extern "C" void __de_handler(void);
 extern "C" void seh_handler(hv::pidt_regs_t regs);
 
 namespace idt
