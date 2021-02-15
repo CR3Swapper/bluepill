@@ -30,7 +30,7 @@ auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> N
 			MmGetVirtualForPhysical(current_pml4));
 
 	// vmxroot will have the same "address space" as the current one being executed in...
-	memcpy(&mm::pml4[255], &kernel_pml4[255], sizeof(mm::pml4e) * 255);
+	memcpy(&mm::pml4[256], &kernel_pml4[256], sizeof(mm::pml4e) * 256);
 
 	// setup mapping ptes to be present, writeable, executable, and user supervisor false...
 	for (auto idx = 0u; idx < 254; ++idx)

@@ -1,7 +1,7 @@
 #pragma once
 #include "hv_types.hpp"
 
-#define PML4_SELF_REF 254
+#define PML4_SELF_REF 255
 #pragma section(".pml4", read, write)
 
 namespace mm
@@ -11,13 +11,31 @@ namespace mm
         void* value;
         struct
         {
-            u64 offset : 12;
+            u64 offset_4kb : 12;
             u64 pt_index : 9;
             u64 pd_index : 9;
             u64 pdpt_index : 9;
             u64 pml4_index : 9;
             u64 reserved : 16;
         };
+
+        struct
+        {
+            u64 offset_2mb : 21;
+            u64 pd_index : 9;
+            u64 pdpt_index : 9;
+            u64 pml4_index : 9;
+            u64 reserved : 16;
+        };
+
+        struct
+        {
+            u64 offset_1gb : 30;
+            u64 pdpt_index : 9;
+            u64 pml4_index : 9;
+            u64 reserved : 16;
+        };
+
     } virt_addr_t, * pvirt_addr_t;
 
     typedef union _pml4e
@@ -107,7 +125,7 @@ namespace mm
     } pte, * ppte;
 
     enum class map_type{ dest, src };
-    inline const ppml4e vmxroot_pml4 = reinterpret_cast<ppml4e>(0x7f0000000000);
+    inline const ppml4e vmxroot_pml4 = reinterpret_cast<ppml4e>(0x7fbfdfeff000);
 
     // make sure this is 4kb aligned or you are going to be meeting allah...
 	__declspec(allocate(".pml4")) 
@@ -121,4 +139,11 @@ namespace mm
 
     // map a page into vmxroot address space...
     auto map_page(u64 phys_addr, map_type type) -> u64;
+
+    // map a page (4kb) from another address into vmxroot...
+    auto map_virt(u64 dirbase, u64 virt_addr, map_type map_type)->u64;
+
+    // copy virtual memory without changing cr3... this maps the physical memory into vmxroot 
+    // address space and copies the memory directly between the physical pages... the memory must be paged in...
+    auto copy_virt(u64 dirbase_src, u64 virt_src, u64 dirbase_dest, u64 virt_dest, u64 size) -> bool;
 }
