@@ -294,7 +294,7 @@ typedef union
          * @see Vol3A[4.3(32-BIT PAGING)]
          * @see Vol3A[4.5(4-LEVEL PAGING)]
          */
-        uint64_t address_of_page_directory : 36;
+        uint64_t pml4_pfn : 36;
 #define CR3_ADDRESS_OF_PAGE_DIRECTORY_BIT                            12
 #define CR3_ADDRESS_OF_PAGE_DIRECTORY_FLAG                           0xFFFFFFFFF000
 #define CR3_ADDRESS_OF_PAGE_DIRECTORY_MASK                           0xFFFFFFFFF

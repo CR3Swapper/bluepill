@@ -1,6 +1,6 @@
 .code
 hypercall proc
-	cpuid
+	vmcall
 	ret
 hypercall endp
 end

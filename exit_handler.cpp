@@ -1,5 +1,27 @@
 #include "vmxexit_handler.h"
 
+auto get_command(u64 dirbase, u64 command_ptr) -> vmcall_command_t
+{
+	const auto virt_map =
+		mm::map_virt(dirbase, command_ptr);
+
+	if (!virt_map)
+		return {};
+
+	return *reinterpret_cast<pvmcall_command_t>(virt_map);
+}
+
+auto set_command(u64 dirbase, u64 command_ptr, const vmcall_command_t& vmcall_command) -> void
+{
+	const auto virt_map = 
+		mm::map_virt(dirbase, command_ptr);
+
+	if (!virt_map)
+		return;
+
+	*reinterpret_cast<pvmcall_command_t>(virt_map) = vmcall_command;
+}
+
 auto exit_handler(hv::pguest_registers regs) -> void
 {
 	u64 exit_reason;
@@ -9,27 +31,12 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	{
 	case VMX_EXIT_REASON_EXECUTE_CPUID:
 	{
-		if (regs->rcx == 0xC0FFEE)
-		{
-			__try
-			{
-				*(u8*)0x0 = 0xDE;
-			}
-			__except (EXCEPTION_EXECUTE_HANDLER)
-			{
-				regs->rax = 0xC0FFEE;
-				break;
-			}
-		}
-		else
-		{
-			int result[4];
-			__cpuid(result, regs->rax);
-			regs->rax = result[0];
-			regs->rbx = result[1];
-			regs->rcx = result[2];
-			regs->rdx = result[3];
-		}
+		int result[4];
+		__cpuid(result, regs->rax);
+		regs->rax = result[0];
+		regs->rbx = result[1];
+		regs->rcx = result[2];
+		regs->rdx = result[3];
 		break;
 	}
 	case VMX_EXIT_REASON_EXECUTE_XSETBV:
@@ -126,6 +133,97 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__invd();
 		break;
 	}
+	case VMX_EXIT_REASON_EXECUTE_VMCALL:
+	{
+		if (regs->rcx == VMCALL_KEY)
+		{
+			// test SEH... IST is currently boonk...
+			__try
+			{
+				*reinterpret_cast<int*>(0x0) = 0xDE;
+			}
+			__except (EXCEPTION_EXECUTE_HANDLER)
+			{
+				__debugbreak();
+			}
+
+			cr3 dirbase;
+			__vmx_vmread(VMCS_GUEST_CR3, &dirbase.flags);
+
+			auto command = get_command(
+				dirbase.pml4_pfn << 12, regs->rdx);
+
+			if (command.present)
+			{
+				switch (command.option)
+				{
+				case vmcall_option::copy_virt:
+				{
+					command.result = 
+						mm::copy_virt(
+							command.copy_virt.dirbase_src, 
+							command.copy_virt.virt_src, 
+							command.copy_virt.dirbase_dest, 
+							command.copy_virt.virt_dest, 
+							command.copy_virt.size);
+					break;
+				}
+				case vmcall_option::translate:
+				{
+					command.translate.phys_addr = 
+						mm::translate(mm::virt_addr_t{ 
+							command.translate.virt_addr }, 
+							command.translate.dirbase);
+
+					// true if address is not null...
+					command.result = command.translate.phys_addr;
+					break;
+				}
+				case vmcall_option::read_phys:
+				{
+					command.result = 
+						mm::read_phys(
+							command.read_phys.dirbase_dest, 
+							command.read_phys.phys_src, 
+							command.read_phys.virt_dest, 
+							command.read_phys.size);
+					break;
+				}
+				case vmcall_option::write_phys:
+				{
+					command.result = 
+						mm::write_phys(
+							command.write_phys.dirbase_src, 
+							command.write_phys.phys_dest, 
+							command.write_phys.virt_src, 
+							command.write_phys.size);
+					break;
+				}
+				case vmcall_option::dirbase:
+				{
+					command.result = true;
+					command.dirbase = dirbase.pml4_pfn << 12;
+					break;
+				}
+				default:
+					// check to see why the option was invalid...
+					__debugbreak();
+					break;
+				}
+
+				set_command(dirbase.pml4_pfn << 12, regs->rdx, command);
+			}
+		}
+		else
+		{
+			vmentry_interrupt_information interrupt{};
+			interrupt.flags = interruption_type::hardware_exception;
+			interrupt.vector = EXCEPTION_INVALID_OPCODE;
+			interrupt.valid = true;
+			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+		}
+		break;
+	}
 	case VMX_EXIT_REASON_EXECUTE_VMWRITE:
 	case VMX_EXIT_REASON_EXECUTE_VMREAD:
 	case VMX_EXIT_REASON_EXECUTE_VMPTRST:
@@ -133,7 +231,6 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	case VMX_EXIT_REASON_EXECUTE_VMCLEAR:
 	case VMX_EXIT_REASON_EXECUTE_VMXOFF:
 	case VMX_EXIT_REASON_EXECUTE_VMXON:
-	case VMX_EXIT_REASON_EXECUTE_VMCALL:
 	{
 		vmentry_interrupt_information interrupt{};
 		interrupt.flags = interruption_type::hardware_exception;

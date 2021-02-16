@@ -8,7 +8,7 @@ namespace mm
 {
     typedef union _virt_addr_t
     {
-        void* value;
+        u64 value;
         struct
         {
             u64 offset_4kb : 12;
@@ -37,6 +37,7 @@ namespace mm
         };
 
     } virt_addr_t, * pvirt_addr_t;
+    using phys_addr_t = virt_addr_t;
 
     typedef union _pml4e
     {
@@ -138,12 +139,15 @@ namespace mm
     auto translate(virt_addr_t virt_addr, u64 pml4_phys, map_type type = map_type::src) -> u64;
 
     // map a page into vmxroot address space...
-    auto map_page(u64 phys_addr, map_type type) -> u64;
+    auto map_page(u64 phys_addr, map_type type = map_type::src) -> u64;
 
     // map a page (4kb) from another address into vmxroot...
-    auto map_virt(u64 dirbase, u64 virt_addr, map_type map_type)->u64;
+    auto map_virt(u64 dirbase, u64 virt_addr, map_type map_type = map_type::src)->u64;
 
     // copy virtual memory without changing cr3... this maps the physical memory into vmxroot 
     // address space and copies the memory directly between the physical pages... the memory must be paged in...
     auto copy_virt(u64 dirbase_src, u64 virt_src, u64 dirbase_dest, u64 virt_dest, u64 size) -> bool;
+
+    auto read_phys(u64 dirbase, u64 guest_phys, u64 guest_virt, u64 size) -> bool;
+    auto write_phys(u64 dirbase, u64 guest_phys, u64 guest_virt, u64 size) -> bool;
 }

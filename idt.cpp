@@ -52,7 +52,7 @@ namespace idt
         result.segment_selector = readcs();
 		result.gate_type = SEGMENT_DESCRIPTOR_TYPE_INTERRUPT_GATE;
 		result.present = true;
-        //result.ist_index = ist_index;
+        result.ist_index = ist_index;
 
 		result.offset_high = idt_handler.offset_high;
 		result.offset_middle = idt_handler.offset_middle;

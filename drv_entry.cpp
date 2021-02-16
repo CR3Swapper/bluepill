@@ -12,18 +12,18 @@ auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> N
 
 	cr3 cr3_value;
 	cr3_value.flags = __readcr3();
-	cr3_value.address_of_page_directory =
+	cr3_value.pml4_pfn =
 		(MmGetPhysicalAddress(mm::pml4).QuadPart >> 12);
 
 	memset(mm::pml4, NULL, sizeof mm::pml4);
-	mm::pml4[PML4_SELF_REF].pfn = cr3_value.address_of_page_directory;
+	mm::pml4[PML4_SELF_REF].pfn = cr3_value.pml4_pfn;
 	mm::pml4[PML4_SELF_REF].present = true;
 	mm::pml4[PML4_SELF_REF].rw = true;
 	mm::pml4[PML4_SELF_REF].user_supervisor = false;
 
 	PHYSICAL_ADDRESS current_pml4;
 	current_pml4.QuadPart =
-		(cr3{ __readcr3() }.address_of_page_directory << 12);
+		(cr3{ __readcr3() }.pml4_pfn << 12);
 
 	const auto kernel_pml4 =
 		reinterpret_cast<mm::ppml4e>(
@@ -33,7 +33,7 @@ auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> N
 	memcpy(&mm::pml4[256], &kernel_pml4[256], sizeof(mm::pml4e) * 256);
 
 	// setup mapping ptes to be present, writeable, executable, and user supervisor false...
-	for (auto idx = 0u; idx < 254; ++idx)
+	for (auto idx = 0u; idx < 255; ++idx)
 	{
 		reinterpret_cast<mm::ppte>(mm::pml4)[idx].present = true;
 		reinterpret_cast<mm::ppte>(mm::pml4)[idx].rw = true;

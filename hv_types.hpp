@@ -29,6 +29,7 @@ extern "C" void _sgdt(void*);
 
 #define HOST_STACK_PAGES 6
 #define HOST_STACK_SIZE PAGE_SIZE * HOST_STACK_PAGES
+#define VMCALL_KEY 0xC0FFEE
 
 // Export Directory
 #define IMAGE_DIRECTORY_ENTRY_EXPORT         0
