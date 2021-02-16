@@ -84,11 +84,11 @@ typedef union _idt_entry_t
 	{
 		u64 offset_low : 16;
 		u64 segment_selector : 16;
-		
+
 		// if this is zero IST isnt used, if there is no privilage change then RSP wont be changed at all, 
 		// and if there is a privilage change then RSP is swapped with an address in the TSS (rsp0).
-		u64 ist_index : 3; 
-		
+		u64 ist_index : 3;
+
 		u64 reserved_0 : 5;
 		u64 gate_type : 5;
 		u64 dpl : 2;
@@ -97,7 +97,7 @@ typedef union _idt_entry_t
 		u64 offset_high : 32;
 		u64 reserved_1 : 32;
 	};
-} idt_entry_t, *pidt_entry_t;
+} idt_entry_t, * pidt_entry_t;
 ```
 
 ###### IST - Interrupt Stack Table
