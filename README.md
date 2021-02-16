@@ -8,6 +8,13 @@
 Bluepill is an Intel type-2 research hypervisor. This project is purely for educational purposes and is designed to run on Windows 10 systems.
 This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch. 
 
+##### Features
+
+* No EPT!
+* Integration with VDM
+* Hypervisor has its own GDT, TSS, IDT, and address space
+* Read/Write Virtual memory example.
+
 ### Why Write A Hypervisor?
 
 Why write a type-2 (Intel or AMD) hypervisor? "To learn" is the typical response, but to learn what? To learn VMX instructions? To learn how to write a windows kernel driver? To learn how to use windbg? Although all of the prior reasons to write a hypervisor are important, learning how to read technical documents and extract what you need from the reading material is much more valuable than all of the other stuff one might learn while writing a hypervisor. This is best summed up as the old saying goes: 
