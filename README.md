@@ -12,7 +12,7 @@ This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 
 Why write a type-2 (Intel or AMD) hypervisor? "To learn" is the typical response, but to learn what? To learn VMX instructions? To learn how to write a windows kernel driver? To learn how to use windbg? Although all of the prior reasons to write a hypervisor are important, learning how to read technical documents and extract what you need from the reading material is much more valuable than all of the other stuff one might learn while writing a hypervisor. This is best summed up as the old saying goes: 
 
-> “give a man a fish, he will feed himself for a day, teach a man to read the manual and he will make a hypervisor” - or something like that...
+> “give a man a fish, he will feed himself for a day, teach a man to read the manual and he will make a hypervisor”
 
 ### VMCS
 
