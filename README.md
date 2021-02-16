@@ -76,20 +76,18 @@ memcpy(&vcpu->tss, (void*)tr_base, sizeof hv::tss64);
 This interrupt stack table is located inside of the TSS. Bluepill interrupt routines have their own stack, this is the only change done to the TSS. IST entries zero through three are used by windows interrupt routines and entries four through six are used by Bluepill. 
 
 ```cpp
+// host page fault interrupt stack...
 vcpu->tss.interrupt_stack_table[idt::ist_idx::pf] =
 	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool, 
 		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
 
+// host general protection interrupt stack...
 vcpu->tss.interrupt_stack_table[idt::ist_idx::gp] =
 	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
 		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
 
+// host division error interrupt stack...
 vcpu->tss.interrupt_stack_table[idt::ist_idx::de] =
 	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
 		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
-
-vcpu->gdt[segment_selector{ readtr() }.idx].base_address_upper = tss.upper;
-vcpu->gdt[segment_selector{ readtr() }.idx].base_address_high = tss.high;
-vcpu->gdt[segment_selector{ readtr() }.idx].base_address_middle = tss.middle;
-vcpu->gdt[segment_selector{ readtr() }.idx].base_address_low = tss.low;
 ```
