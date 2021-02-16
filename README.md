@@ -61,6 +61,35 @@ The host TSS is 1:1 with the guest TSS except that there are additional interrup
 in RSP cannot ***always*** be trusted. Therefore, ***especially*** on privilege level changes, RSP will be changed with a predetermined valid stack (which is located in the TSS). However if an exception happens and there is no privilege change (say you have an exception in ring-0),
 RSP ***might not*** need to be changed as there is not a risk of privilege escalation. An OS (and type-2 hypervisor) designer can determine how they want RSP to be handled by the CPU by configuring interrupt descriptor table entries accordingly. In an interrupt descriptor table entry there is a bit field for interrupt stack table index. 
 
+```cpp
+segment_descriptor_register_64 gdt_value;
+_sgdt(&gdt_value);
+
+const auto [tr_descriptor, tr_rights, tr_limit, tr_base] =
+	gdt::get_info(gdt_value, segment_selector{ readtr() });
+
+// copy windows TSS into new TSS...
+memcpy(&vcpu->tss, (void*)tr_base, sizeof hv::tss64);
+```
+
 ###### IST - Interrupt Stack Table
 This interrupt stack table is located inside of the TSS. Bluepill interrupt routines have their own stack, this is the only change done to the TSS. IST entries zero through three are used by windows interrupt routines and entries four through six are used by Bluepill. 
 
+```cpp
+vcpu->tss.interrupt_stack_table[idt::ist_idx::pf] =
+	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool, 
+		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
+
+vcpu->tss.interrupt_stack_table[idt::ist_idx::gp] =
+	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
+		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
+
+vcpu->tss.interrupt_stack_table[idt::ist_idx::de] =
+	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
+		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
+
+vcpu->gdt[segment_selector{ readtr() }.idx].base_address_upper = tss.upper;
+vcpu->gdt[segment_selector{ readtr() }.idx].base_address_high = tss.high;
+vcpu->gdt[segment_selector{ readtr() }.idx].base_address_middle = tss.middle;
+vcpu->gdt[segment_selector{ readtr() }.idx].base_address_low = tss.low;
+```
