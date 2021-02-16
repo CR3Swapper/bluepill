@@ -14,6 +14,7 @@ This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 * Integration with VDM
 * Hypervisor has its own GDT, TSS, IDT, and address space
 * Read/Write Virtual memory example.
+* SEH in vmxroot handled by hypervisor interrupt handlers and not by guest...
 
 ### Why Write A Hypervisor?
 
