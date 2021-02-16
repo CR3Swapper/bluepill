@@ -121,3 +121,21 @@ vcpu->tss.interrupt_stack_table[idt::ist_idx::de] =
 ```
 
 #### IDT - Interrupt Descriptor Table
+
+The host IDT is 1:1 to the guest IDT except for three interrupt handlers, #PF, #DE, and #GP. These three different interrupt handlers all route to the same SEH handler function
+which just changes RIP to the catch block of whatever try/except the exception happened in. This allows for page faults, general protection faults and division errors to not be handled
+by guest controlled interrupt handlers.
+
+```cpp
+// setup IDT for host....
+segment_descriptor_register_64 idt_value;
+__sidt(&idt_value);
+
+// copy the guest IDT entries...
+memcpy(idt::table, (void*)idt_value.base_address, idt_value.limit);
+
+// change gp, pf, and de to vmxroot handlers...
+idt::table[general_protection] = idt::create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
+idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
+idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
+```
