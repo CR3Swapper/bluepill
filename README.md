@@ -14,8 +14,6 @@ Why write a type-2 (Intel or AMD) hypervisor? "To learn" is the typical response
 
 > “Give a man a fish and you feed him for a day. Teach a man to fish and you feed him for a lifetime”
 
-
-
 ### VMCS
 
 This section of the readme just contains notes and a list of things I stumbled on and took me a while to figure out and fix.
@@ -33,3 +31,28 @@ see exactly what the MSR masks are, and what VMCS field's are enabled after you 
 * After getting my first vmexit the exit reason was 0x80000021 (invalid guest state). I thought it was segmentation code since I've never done anything with segments before but after a few days of checking every single segment check in chapter 26 section 3, I continued reading the guest requirements in chapter 24  section 4, part 2 goes over non-register states and I was not setting  `VMCS_GUEST_ACTIVITY_STATE` to zero. 
 
 Dump of VMCS guest fields can be found [here](https://githacks.org/_xeroxz/bluepill/-/blob/master/VMCS-GUEST.md). 
+
+### Host State Information
+
+Bluepill has its "own" GDT, TSS, IDT, and address space. However, in order to allow for windbg usage, some interrupt handlers 
+forward to guest controlled interrupt handlers such as #DB and interrupt handler three. The host GDT also contains a unique TR base (TSS), which contains three new interrupt stacks.
+These stacks are used by bluepills interrupt routines. This is not required at all but I felt I should go the extra mile here and setup dedicated stacks for my interrupt handlers in the 
+off chance that RSP contains an invalid address when a page fault, division error, or general protection error happens.
+
+##### GDT
+
+The host GDT is 1:1 with the guest GDT except firstly, a different, host controlled page is used for each cores GDT. Secondly the TR segment base address is updated to reflect
+the new TSS (which is also 1:1 with the guest TSS but on a new page).
+
+```cpp
+segment_descriptor_register_64 gdt_value;
+_sgdt(&gdt_value);
+
+// the GDT can be 65536 bytes large 
+// but on windows its less then a single page (4kb)
+// ...
+// also note each logical processor gets its own GDT... 
+memcpy(vcpu->gdt, (void*)gdt_value.base_address, PAGE_SIZE);
+```
+
+##### TSS
