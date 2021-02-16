@@ -39,7 +39,7 @@ forward to guest controlled interrupt handlers such as #DB and interrupt handler
 These stacks are used by bluepills interrupt routines. This is not required at all but I felt I should go the extra mile here and setup dedicated stacks for my interrupt handlers in the 
 off chance that RSP contains an invalid address when a page fault, division error, or general protection error happens.
 
-##### GDT - Global Descriptor Table
+#### GDT - Global Descriptor Table
 
 The host GDT is 1:1 with the guest GDT except firstly, a different, host controlled page is used for each cores GDT. Secondly the TR segment base address is updated to reflect
 the new TSS (which is also 1:1 with the guest TSS but on a new page).
@@ -55,7 +55,7 @@ _sgdt(&gdt_value);
 memcpy(vcpu->gdt, (void*)gdt_value.base_address, PAGE_SIZE);
 ```
 
-##### TSS - Task State Segment
+###### TSS - Task State Segment
 
 The host TSS is 1:1 with the guest TSS except that there are additional interrupt stack table entries. When an exception happens and execution is redirected to an interrupt handler, the address
 in RSP cannot ***always*** be trusted. Therefore, ***especially*** on privilege level changes, RSP will be changed with a predetermined valid stack (which is located in the TSS). However if an exception happens and there is no privilege change (say you have an exception in ring-0),
@@ -91,3 +91,5 @@ vcpu->tss.interrupt_stack_table[idt::ist_idx::de] =
 	reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
 		PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
 ```
+
+#### IDT - Interrupt Descriptor Table
