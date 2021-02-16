@@ -59,17 +59,45 @@ memcpy(vcpu->gdt, (void*)gdt_value.base_address, PAGE_SIZE);
 
 The host TSS is 1:1 with the guest TSS except that there are additional interrupt stack table entries. When an exception happens and execution is redirected to an interrupt handler, the address
 in RSP cannot ***always*** be trusted. Therefore, ***especially*** on privilege level changes, RSP will be changed with a predetermined valid stack (which is located in the TSS). However if an exception happens and there is no privilege change (say you have an exception in ring-0),
-RSP ***might not*** need to be changed as there is not a risk of privilege escalation. An OS (and type-2 hypervisor) designer can determine how they want RSP to be handled by the CPU by configuring interrupt descriptor table entries accordingly. In an interrupt descriptor table entry there is a bit field for interrupt stack table index. 
+RSP ***might not*** need to be changed as there is not a risk of privilege escalation. An OS (and type-2 hypervisor) designer can determine how they want RSP to be handled by the CPU by configuring interrupt descriptor table entries accordingly. 
+In an interrupt descriptor table entry there is a bit field for interrupt stack table index. 
 
 ```cpp
-segment_descriptor_register_64 gdt_value;
-_sgdt(&gdt_value);
+typedef struct _tss64
+{
+	u32 reserved;
+	
+	// if you dont use an IST entry and there is a privilage change, 
+	// rsp will be swapped with an address in this array...
+	u64 privilege_stacks[3]; 
+	
+	u64 reserved_1;
+	u64 interrupt_stack_table[7];
+	u16 reserved_2;
+	u16 iomap_base;
+} tss64, *ptss64;
 
-const auto [tr_descriptor, tr_rights, tr_limit, tr_base] =
-	gdt::get_info(gdt_value, segment_selector{ readtr() });
-
-// copy windows TSS into new TSS...
-memcpy(&vcpu->tss, (void*)tr_base, sizeof hv::tss64);
+typedef union _idt_entry_t
+{
+	u128 flags;
+	struct
+	{
+		u64 offset_low : 16;
+		u64 segment_selector : 16;
+		
+		// if this is zero IST isnt used, if there is no privilage change then RSP wont be changed at all, 
+		// and if there is a privilage change then RSP is swapped with an address in the TSS (rsp0).
+		u64 ist_index : 3; 
+		
+		u64 reserved_0 : 5;
+		u64 gate_type : 5;
+		u64 dpl : 2;
+		u64 present : 1;
+		u64 offset_middle : 16;
+		u64 offset_high : 32;
+		u64 reserved_1 : 32;
+	};
+} idt_entry_t, *pidt_entry_t;
 ```
 
 ###### IST - Interrupt Stack Table
