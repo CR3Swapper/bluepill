@@ -1,4 +1,4 @@
-# Bluepill
+# Bluepill - Type-2 Intel Hypervisor For Windows 10 Systems
 
 <div align="center">
   <img width="1000" height="auto" src="https://imgur.com/b1bYNZU.png"/>
