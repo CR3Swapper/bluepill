@@ -1,9 +1,9 @@
+# Bluepill
+
 <div align="center">
   <img width="1000" height="auto" src="https://imgur.com/b1bYNZU.png"/>
   <p>Figure 1. First ever vmexit...</p>
 </div>
-
-# Bluepill
 
 Bluepill is an Intel type-2 research hypervisor. This project is purely for educational purposes and is designed to run on Windows 10 systems.
 This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch. 
@@ -147,3 +147,7 @@ idt::table[general_protection] = idt::create_entry(hv::idt_addr_t{ __gp_handler 
 idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
 idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
 ```
+
+# Demo
+
+The demo code demonstrates bluepill integration with VDM and a read/write physical memory example.
