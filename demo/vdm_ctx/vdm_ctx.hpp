@@ -25,13 +25,15 @@ namespace vdm
 	{
 	public:
 		explicit vdm_ctx(read_phys_t& read_func, write_phys_t& write_func);
-		void set_read(read_phys_t& read_func);
-		void set_write(write_phys_t& write_func);
 		void rkm(void* dst, void* src, std::size_t size);
 		void wkm(void* dst, void* src, std::size_t size);
 
+		auto get_peprocess(std::uint32_t pid) -> PEPROCESS;
+		auto get_dirbase(std::uint32_t pid) -> std::uintptr_t;
+		auto get_base_address(std::uint32_t pid) -> std::uintptr_t;
+
 		template <class T, class ... Ts>
-		__forceinline std::invoke_result_t<T, Ts...> syscall(void* addr, Ts ... args) const
+		std::invoke_result_t<T, Ts...> syscall(void* addr, Ts ... args) const
 		{
 			static const auto proc =
 				GetProcAddress(
@@ -65,7 +67,7 @@ namespace vdm
 		}
 
 		template <class T>
-		__forceinline auto rkm(std::uintptr_t addr) -> T
+		auto rkm(std::uintptr_t addr) -> T
 		{
 			T buffer;
 			rkm((void*)&buffer, (void*)addr, sizeof T);
@@ -73,31 +75,15 @@ namespace vdm
 		}
 
 		template <class T>
-		__forceinline void wkm(std::uintptr_t addr, const T& value)
+		void wkm(std::uintptr_t addr, const T& value)
 		{
 			wkm((void*)addr, (void*)&value, sizeof T);
 		}
 
-		__forceinline auto get_peprocess(std::uint32_t pid) -> PEPROCESS
-		{
-			static const auto ps_lookup_peproc =
-				util::get_kmodule_export(
-					"ntoskrnl.exe",
-					"PsLookupProcessByProcessId");
-
-			PEPROCESS peproc = nullptr;
-			this->syscall<PsLookupProcessByProcessId>(
-				ps_lookup_peproc,
-				(HANDLE)pid,
-				&peproc
-			);
-			return peproc;
-		}
+		read_phys_t read_phys;
+		write_phys_t write_phys;
 	private:
 		void locate_syscall(std::uintptr_t begin, std::uintptr_t end) const;
 		bool valid_syscall(void* syscall_addr) const;
-
-		read_phys_t read_phys;
-		write_phys_t write_phys;
 	};
 }

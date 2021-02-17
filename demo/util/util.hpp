@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <ntstatus.h>
+#include <tlhelp32.h>
 
 #include <cstdint>
 #include <string_view>
@@ -86,6 +87,35 @@ namespace util
 				reinterpret_cast<DWORD_PTR>(base_addr) + dos_headers->e_lfanew);
 
 		return &nt_headers->FileHeader;
+	}
+
+	__forceinline auto get_pid(const char* proc_name) -> std::uint32_t
+	{
+		PROCESSENTRY32 proc_info;
+		proc_info.dwSize = sizeof(proc_info);
+
+		HANDLE proc_snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+		if (proc_snapshot == INVALID_HANDLE_VALUE)
+			return NULL;
+
+		Process32First(proc_snapshot, &proc_info);
+		if (!strcmp(proc_info.szExeFile, proc_name))
+		{
+			CloseHandle(proc_snapshot);
+			return proc_info.th32ProcessID;
+		}
+
+		while (Process32Next(proc_snapshot, &proc_info))
+		{
+			if (!strcmp(proc_info.szExeFile, proc_name))
+			{
+				CloseHandle(proc_snapshot);
+				return proc_info.th32ProcessID;
+			}
+		}
+
+		CloseHandle(proc_snapshot);
+		return NULL;
 	}
 
 	__forceinline auto get_kmodule_base(const char* module_name) -> std::uintptr_t

@@ -37,14 +37,42 @@ namespace vdm
 			search_thread.join();
 	}
 
-	void vdm_ctx::set_read(read_phys_t& read_func)
+	auto vdm_ctx::get_peprocess(std::uint32_t pid) -> PEPROCESS
 	{
-		this->read_phys = read_func;
+		static const auto ps_lookup_peproc =
+			util::get_kmodule_export(
+				"ntoskrnl.exe",
+				"PsLookupProcessByProcessId");
+
+		PEPROCESS peproc = nullptr;
+		this->syscall<PsLookupProcessByProcessId>(
+			ps_lookup_peproc,
+			(HANDLE)pid,
+			&peproc
+			);
+		return peproc;
 	}
 
-	void vdm_ctx::set_write(write_phys_t& write_func)
+	auto vdm_ctx::get_dirbase(std::uint32_t pid) -> std::uintptr_t
 	{
-		this->write_phys = write_func;
+		const auto peproc = 
+			reinterpret_cast<std::uintptr_t>(
+				get_peprocess(pid));
+
+		if (!peproc)
+			return {};
+
+		return rkm<cr3>(peproc + 0x28).pml4_pfn << 12;
+	}
+
+	auto vdm_ctx::get_base_address(std::uint32_t pid) -> std::uintptr_t
+	{
+		static const auto ps_get_base_addr = 
+			util::get_kmodule_export(
+				"ntoskrnl.exe", "PsGetProcessSectionBaseAddress");
+
+		return syscall<std::uintptr_t(*)(PEPROCESS)>(
+			ps_get_base_addr, get_peprocess(pid));
 	}
 
 	void vdm_ctx::rkm(void* dst, void* src, std::size_t size)
@@ -52,7 +80,7 @@ namespace vdm
 		static const auto ntoskrnl_memcpy =
 			util::get_kmodule_export("ntoskrnl.exe", "memcpy");
 
-		this->syscall<decltype(&memcpy)>(
+		syscall<decltype(&memcpy)>(
 			ntoskrnl_memcpy, dst, src, size);
 	}
 
@@ -61,7 +89,7 @@ namespace vdm
 		static const auto ntoskrnl_memcpy =
 			util::get_kmodule_export("ntoskrnl.exe", "memcpy");
 
-		this->syscall<decltype(&memcpy)>(
+		syscall<decltype(&memcpy)>(
 			ntoskrnl_memcpy, dst, src, size);
 	}
 
@@ -74,6 +102,10 @@ namespace vdm
 					PAGE_4KB, MEM_COMMIT | MEM_RESERVE,
 					PAGE_READWRITE
 				));
+
+		// you must write to the VirtualAlloc 
+		// page in order for the PTE to be created...
+		memset(page_data, NULL, PAGE_4KB);
 
 		for (auto page = 0u; page < length; page += PAGE_4KB)
 		{
@@ -91,6 +123,7 @@ namespace vdm
 						reinterpret_cast<void*>(
 							address + page + nt_page_offset));
 		}
+
 		VirtualFree(page_data, PAGE_4KB, MEM_DECOMMIT);
 	}
 

@@ -137,16 +137,6 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	{
 		if (regs->rcx == VMCALL_KEY)
 		{
-			// test SEH... IST is currently boonk...
-			__try
-			{
-				*reinterpret_cast<int*>(0x0) = 0xDE;
-			}
-			__except (EXCEPTION_EXECUTE_HANDLER)
-			{
-				__debugbreak();
-			}
-
 			cr3 dirbase;
 			__vmx_vmread(VMCS_GUEST_CR3, &dirbase.flags);
 

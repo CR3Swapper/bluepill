@@ -145,7 +145,15 @@ namespace mm
             if (!mapped_src)
                 return false;
 
-            memcpy(mapped_dest, mapped_src, current_size);
+            __try
+            {
+                memcpy(mapped_dest, mapped_src, current_size);
+            }
+            __except (EXCEPTION_EXECUTE_HANDLER)
+            {
+                return false;
+            }
+
             guest_phys += current_size;
             guest_virt += current_size;
             size -= current_size;
@@ -188,7 +196,15 @@ namespace mm
             if (!mapped_src)
                 return false;
 
-            memcpy(mapped_dest, mapped_src, current_size);
+            __try
+            {
+                memcpy(mapped_dest, mapped_src, current_size);
+            }
+            __except (EXCEPTION_EXECUTE_HANDLER)
+            {
+                return false;
+            }
+
             guest_phys += current_size;
             guest_virt += current_size;
             size -= current_size;
@@ -225,12 +241,21 @@ namespace mm
 
             // copy directly between the two pages...
             auto current_size = min(dest_size, src_size);
-            memcpy(mapped_dest, mapped_src, current_size);
+
+            __try
+            {
+                memcpy(mapped_dest, mapped_src, current_size);
+            }
+            __except (EXCEPTION_EXECUTE_HANDLER)
+            {
+                return false;
+            }
 
             virt_src += current_size;
             virt_dest += current_size;
             size -= current_size;
         }
+
         return true;
     }
 }

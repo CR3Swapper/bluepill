@@ -33,3 +33,17 @@ using PsLookupProcessByProcessId = NTSTATUS(__fastcall*)(
 	HANDLE     ProcessId,
 	PEPROCESS* Process
 );
+
+typedef union
+{
+    uint64_t flags;
+    struct
+    {
+        uint64_t reserved1 : 3;
+        uint64_t page_level_write_through : 1;
+        uint64_t page_level_cache_disable : 1;
+        uint64_t reserved2 : 7;
+        uint64_t pml4_pfn : 36;
+        uint64_t reserved3 : 16;
+    };
+} cr3;
