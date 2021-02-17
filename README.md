@@ -148,6 +148,11 @@ idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::
 idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
 ```
 
+### Host CR3 - Vmxroot Address Space
+
+The host CR3 value contains a different PML4 (Page Mape Level 4) PFN (Page Frame Number) then the system address space. This new address space contains the same PML4E's as the
+system address space except the lower 255 PML4E's are reserved for the hypervisor. PML4E 256 is a self referencing PML4E setup by the hypervisor in `drv_entry`. 
+
 # Demo
 
 <div align="center">
