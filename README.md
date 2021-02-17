@@ -1,7 +1,7 @@
 # Bluepill - Type-2 Intel Hypervisor For Windows 10 Systems
 
 <div align="center">
-  <img width="1000" height="auto" src="https://imgur.com/b1bYNZU.png"/>
+  <img width="1000" height="auto" src="https://githacks.org/_xeroxz/bluepill/-/raw/37484f6966c18eb371e819b32ef60334b98ea0b3/screenshots/firstvmexit.png"/>
   <p>Figure 1. First ever vmexit...</p>
 </div>
 
@@ -150,4 +150,9 @@ idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt
 
 # Demo
 
-The demo code demonstrates bluepill integration with VDM and a read/write physical memory example.
+<div align="center">
+  <img width="1000" height="auto" src="https://githacks.org/_xeroxz/bluepill/-/raw/37484f6966c18eb371e819b32ef60334b98ea0b3/screenshots/demo.png"/>
+  <p>Figure 2. demo VDM example and read/write virtual memory...</p>
+</div>
+
+The demo code demonstrates bluepill integration with VDM and a read/write physical memory, and virtual memory of other address spaces. 
