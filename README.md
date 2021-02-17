@@ -151,7 +151,39 @@ idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt
 ### Host CR3 - Vmxroot Address Space
 
 The host CR3 value contains a different PML4 (Page Mape Level 4) PFN (Page Frame Number) then the system address space. This new address space contains the same PML4E's as the
-system address space except the lower 255 PML4E's are reserved for the hypervisor. PML4E 256 is a self referencing PML4E setup by the hypervisor in `drv_entry`. 
+system address space except the lower 255 PML4E's are reserved for the hypervisor. The reasoning for copying the PML4E's into the new address space is that the GDT, TSS, vcpu structures, 
+VMCS, interrupt stacks, and vmexit stacks are all allocated with ExAllocatePool. PML4E 256 is a self referencing PML4E setup by the hypervisor in `drv_entry`.
+
+###### Mapping PTE's
+Entries in the hypervisors PML4 between 0 and 255 actually contain PTE's. The hypervisor does not maintain any PDPT's, PD's or PT's, all layers of address translation can be
+done with a single PML4. This is possible due to the fact PML4E's, PDPTE's, and PDE's are all the same structure. This fact combined with self referencing entries allow
+for an address to use the self referencing PML4E as a PDPTE, and also a PDE. 
+
+Each logical processor has two PTE's. One for source page mapping, and destiniation mapping. This allows for copying of memory directly between two physical pages possible
+without the need for an intermediate buffer.
+
+```cpp
+auto map_page(u64 phys_addr, map_type type) -> u64
+{
+    cpuid_eax_01 cpuid_value;
+    virt_addr_t result{ (u64) vmxroot_pml4 };
+    __cpuid((int*)&cpuid_value, 1);
+
+    // PTE index is specified by the logical processor 
+    // number + the mapping type (0 for src, and 1 for dest)...
+    result.pt_index = (cpuid_value
+        .cpuid_additional_information
+            .initial_apic_id * 2)
+            + (unsigned)type;
+
+    reinterpret_cast<ppte>(vmxroot_pml4)
+        [result.pt_index].pfn = phys_addr >> 12;
+
+    __invlpg((void*)result.value);
+    result.offset_4kb = phys_addr_t{ phys_addr }.offset_4kb;
+    return result.value;
+}
+```
 
 # Demo
 
