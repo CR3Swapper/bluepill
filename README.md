@@ -148,7 +148,7 @@ idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::
 idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
 ```
 
-### Host CR3 - Vmxroot Address Space
+### Host CR3 - Hypervisor Address Space
 
 The host CR3 value contains a different PML4 (Page Mape Level 4) PFN (Page Frame Number) then the system address space. This new address space contains the same PML4E's as the
 system address space except the lower 255 PML4E's are reserved for the hypervisor. The reasoning for copying the PML4E's into the new address space is that the GDT, TSS, vcpu structures, 
@@ -184,6 +184,11 @@ auto map_page(u64 phys_addr, map_type type) -> u64
     return result.value;
 }
 ```
+
+Also it may seem like you would need to have more then two PTE's (two pages), to facilitate first translating virtual addresses from another address space to a physical address
+and then mapping that physical page into virtual memory. However, this is all accomplishable with only two PTE's. You will see throughout mm.cpp/mm.hpp a parameter `map_type type`.
+All mapping required to translate and map a page must be done with either the `map_type::src` or `map_type::dest`. This makes it so if you have already mapped a page with `map_type::dest`
+the PTE mapping that page will not be used to map the `map_type::src` page. 
 
 # Demo
 
