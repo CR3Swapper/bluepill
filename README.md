@@ -191,7 +191,7 @@ and then mapping that physical page into virtual memory. However, this is all ac
 All mapping required to translate and map a page must be done with either the `map_type::src` or `map_type::dest`. This makes it so if you have already mapped a page with `map_type::dest`
 the PTE mapping that page will not be used to map the `map_type::src` page. 
 
-# Demo - VDM Integration, Physical Memory Read/Write, Virtual Memory Read/Write
+# Demo - VDM Integration, Physical/Virtual Memory Read/Write
 
 <div align="center">
   <img width="1000" height="auto" src="https://githacks.org/_xeroxz/bluepill/-/raw/37484f6966c18eb371e819b32ef60334b98ea0b3/screenshots/demo.png"/>
