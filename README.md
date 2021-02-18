@@ -17,6 +17,16 @@ This project uses WDK and thus Windows Kernel functions to facilitate vmxlaunch.
 * SEH in vmxroot handled by hypervisor interrupt handlers...
 * SEH works reguardless if manually mapped or loaded normally...
 
+##### Related Work - Resources
+
+* [Intel Manual Volume 3C](https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3c-part-3-manual.pdf)
+* [daax - 7 Days To Virtualization: A Series On Hypervisor Development](https://revers.engineering/7-days-to-virtualization-a-series-on-hypervisor-development/)
+* [Sina Karvandi - Hypervisor from scratch](https://rayanfam.com/topics/hypervisor-from-scratch-part-1/)
+* [HyperPlatform](https://github.com/tandasat/HyperPlatform)
+* [Gbps - gbhv](https://github.com/Gbps/gbhv)
+* [wbenny - hvpp (very nice btw, good reference)](https://github.com/wbenny/hvpp)
+* [_xeroxz - Hyper-v Hacking Framework](https://githacks.org/_xeroxz/voyager)
+
 ### Why Write A Hypervisor?
 
 Why write a type-2 (Intel or AMD) hypervisor? "To learn" is the typical response, but to learn what? To learn VMX instructions? To learn how to write a windows kernel driver? To learn how to use windbg? Although all of the prior reasons to write a hypervisor are important, learning how to read technical documents and extract what you need from the reading material is much more valuable than all of the other stuff one might learn while writing a hypervisor. This is best summed up as the old saying goes: 
@@ -216,13 +226,3 @@ vdm::write_phys_t _write_phys =
 		reinterpret_cast<u64>(addr), buffer, size);
 };
 ```
-
-# Related Work - Resources
-
-* [Intel Manual Volume 3C](https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3c-part-3-manual.pdf)
-* [daax - 7 Days To Virtualization: A Series On Hypervisor Development](https://revers.engineering/7-days-to-virtualization-a-series-on-hypervisor-development/)
-* [Sina Karvandi - Hypervisor from scratch](https://rayanfam.com/topics/hypervisor-from-scratch-part-1/)
-* [HyperPlatform](https://github.com/tandasat/HyperPlatform)
-* [Gbps - gbhv](https://github.com/Gbps/gbhv)
-* [wbenny - hvpp (very nice btw, good reference)](https://github.com/wbenny/hvpp)
-* [_xeroxz - Hyper-v Hacking Framework](https://githacks.org/_xeroxz/voyager)
