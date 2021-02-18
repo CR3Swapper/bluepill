@@ -198,3 +198,20 @@ the PTE mapping that page will not be used to map the `map_type::src` page.
 </div>
 
 The demo code demonstrates bluepill integration with VDM and a read/write physical memory, and virtual memory of other address spaces. 
+
+```cpp
+// use the hypervisor to read and write physical memory...
+vdm::read_phys_t _read_phys =
+	[&](void* addr, void* buffer, std::size_t size) -> bool
+{
+	return bluepill::read_phys(
+		reinterpret_cast<u64>(addr), buffer, size);
+};
+
+vdm::write_phys_t _write_phys =
+	[&](void* addr, void* buffer, std::size_t size) -> bool
+{
+	return bluepill::write_phys(
+		reinterpret_cast<u64>(addr), buffer, size);
+};
+```
