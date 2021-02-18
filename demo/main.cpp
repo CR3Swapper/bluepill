@@ -49,6 +49,5 @@ auto __cdecl main(int argc, char** argv) -> void
 	std::printf("explorer.exe dirbase -> 0x%p\n", explorer_dirbase);
 	std::printf("explorer.exe base address -> 0x%p\n", explorer_base);
 	std::printf("explorer.exe MZ -> 0x%x\n", bluepill::rpm<short>(explorer_dirbase, explorer_base));
-	bluepill::wpm<short>(explorer_dirbase, explorer_base, 0xDE);
 	std::getchar();
 }
