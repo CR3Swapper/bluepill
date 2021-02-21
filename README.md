@@ -121,7 +121,7 @@ typedef union _idt_entry_t
 ```
 
 ###### IST - Interrupt Stack Table
-This interrupt stack table is located inside of the TSS. Bluepill interrupt routines have their own stack, this is the only change done to the TSS. IST entries zero through three are used by windows interrupt routines and entries four through six are used by Bluepill. 
+This interrupt stack table is located inside of the TSS. Bluepill interrupt routines have their own stack, this is the only change done to the TSS. IST entries one through three are used by windows interrupt routines and entries four through six are used by Bluepill. 
 
 ```cpp
 // host page fault interrupt stack...
