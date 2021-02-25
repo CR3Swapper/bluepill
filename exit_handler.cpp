@@ -68,7 +68,9 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
 			interrupt.valid = true;
+
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
 		}
 		return; // dont advance rip...
 	}
@@ -95,7 +97,9 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
 			interrupt.valid = true;
+
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
 		}
 		return; // dont advance rip...
 	}
@@ -122,7 +126,9 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
 			interrupt.valid = true;
+
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
 		}
 		return; // dont advance rip...
 	}
@@ -210,7 +216,10 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.flags = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_INVALID_OPCODE;
 			interrupt.valid = true;
+
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
+			return; // dont advance rip...
 		}
 		break;
 	}
@@ -226,7 +235,10 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		interrupt.flags = interruption_type::hardware_exception;
 		interrupt.vector = EXCEPTION_INVALID_OPCODE;
 		interrupt.valid = true;
+
 		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+		// manual says there will never be an error code... so just put null...
+		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
 		return; // dont advance rip...
 	}
 	default:

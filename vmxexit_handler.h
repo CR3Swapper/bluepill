@@ -3,6 +3,7 @@
 #include "debug.hpp"
 #include "invd.hpp"
 #include "mm.hpp"
+#include "vmxon.hpp"
 
 enum class vmcall_option
 {

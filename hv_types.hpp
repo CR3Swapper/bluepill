@@ -657,7 +657,7 @@ namespace hv
 		u64 vmcs_phys;
 		u64 vmxon_phys;
 		u64 host_stack;
-
+		u64 error_code;
 		tss64 tss;
 		segment_descriptor_64* gdt;
 	} vcpu_ctx, * pvcpu_ctx;

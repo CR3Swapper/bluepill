@@ -2,6 +2,7 @@
 #include "hv_types.hpp"
 #include "segment_intrin.h"
 #include "debug.hpp"
+#include "vmxon.hpp"
 
 #pragma section(".idt", read, write)
 extern "C" void __gp_handler(void);

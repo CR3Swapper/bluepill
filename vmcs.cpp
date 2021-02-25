@@ -33,7 +33,7 @@ namespace vmcs
 		fs.request_privilege_level = NULL;
 		fs.table = NULL;
 		__vmx_vmwrite(VMCS_HOST_FS_SELECTOR, fs.flags);
-		__vmx_vmwrite(VMCS_HOST_GS_BASE, __readmsr(IA32_FS_BASE));
+		__vmx_vmwrite(VMCS_HOST_FS_BASE, __readmsr(IA32_FS_BASE));
 
 		segment_selector gs{ readgs() };
 		gs.request_privilege_level = NULL;

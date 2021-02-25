@@ -2,6 +2,7 @@
 
 auto seh_handler(hv::pidt_regs_t regs) -> void
 {
+    g_vcpu->error_code = regs->error_code;
     const auto rva = regs->rip - reinterpret_cast<u64>(idt::image_base);
     const auto nt_headers = reinterpret_cast<IMAGE_NT_HEADERS64*>(
         reinterpret_cast<u64>(idt::image_base) + 
