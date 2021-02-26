@@ -34,7 +34,7 @@ Why write a type-2 (Intel or AMD) hypervisor? "To learn" is the typical response
 
 > “give a man a fish, he will feed himself for a day, teach a man to read the manual and he will make a hypervisor”
 
-My second reason for learning about intel VT-x, is that hypervisors can be used to solve very complex programs, can be used to debug things which cant normally be debugged, and moniter memory accesses at a hardware level (EPT is on my to-do).
+My second reason for learning about intel VT-x, is that hypervisors can be used to solve very complex problems, they can be used to debug things which cant normally be debugged, and moniter memory accesses at a hardware level (EPT is on my to-do).
 
 ### VMCS
 
