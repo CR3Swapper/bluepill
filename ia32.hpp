@@ -10156,6 +10156,8 @@ typedef union
 #define IA32_VMX_PROCBASED_CTLS                                      0x00000482
 typedef union
 {
+    uint64_t flags;
+
     struct
     {
         uint64_t reserved1 : 2;
@@ -10429,8 +10431,6 @@ typedef union
 #define IA32_VMX_PROCBASED_CTLS_ACTIVATE_SECONDARY_CONTROLS(_)       (((_) >> 31) & 0x01)
         uint64_t reserved7 : 32;
     };
-
-    uint64_t flags;
 } ia32_vmx_procbased_ctls_register;
 
 
