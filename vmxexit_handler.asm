@@ -1,4 +1,5 @@
 extern exit_handler : proc
+extern vmresume_failure : proc
 
 .code
 vmxlaunch_processor proc
@@ -99,5 +100,7 @@ vmxexit_handler proc
 	pop rax
 
 	vmresume
+	call vmresume_failure
+	hlt
 vmxexit_handler endp
 end

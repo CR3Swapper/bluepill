@@ -96,16 +96,10 @@ auto seh_handler(hv::pidt_regs_t regs) -> void
 auto nmi_handler(hv::pidt_regs_t regs) -> void
 {
     ia32_vmx_procbased_ctls_register procbased_ctls;
-    ia32_vmx_pinbased_ctls_register pinbased_ctls;
-
     __vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
-    __vmx_vmread(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, &pinbased_ctls.flags);
 
     procbased_ctls.nmi_window_exiting = true;
-    pinbased_ctls.virtual_nmi = true;
-
     __vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
-    __vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
 }
 
 namespace idt

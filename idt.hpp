@@ -16,9 +16,8 @@ extern "C" void seh_handler_ecode(hv::pidt_regs_ecode_t regs);
 
 namespace idt
 {
-	__declspec(allocate(".idt")) 
-	inline hv::idt_entry_t table[256];
-	enum ist_idx : u8 { nmi = 3, de = 4, pf = 5, gp = 6};
+	__declspec(allocate(".idt")) inline hv::idt_entry_t table[256];
+	enum ist_idx : u8 { nmi = 3, de = 4, pf = 5, gp = 6 };
 
 	inline void* image_base = nullptr; // used for SEH...
 	auto create_entry(hv::idt_addr_t idt_handler, u8 ist_index) -> hv::idt_entry_t;

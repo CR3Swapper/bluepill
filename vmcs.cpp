@@ -144,44 +144,45 @@ namespace vmcs
 
 	auto setup_controls() -> void
 	{
-		ia32_vmx_true_ctls_register msr_fix_value;
-		ia32_vmx_pinbased_ctls_register pinbased_ctls;
-		ia32_vmx_procbased_ctls_register procbased_ctls;
-		ia32_vmx_procbased_ctls2_register procbased_ctls2;
-		ia32_vmx_entry_ctls_register entry_ctls;
-		ia32_vmx_exit_ctls_register exit_ctls;
-		ia32_vmx_basic_register vmx_basic;
+		ia32_vmx_true_ctls_register msr_fix_value{};
+		ia32_vmx_pinbased_ctls_register pinbased_ctls{};
+		ia32_vmx_procbased_ctls_register procbased_ctls{};
+		ia32_vmx_procbased_ctls2_register procbased_ctls2{};
+		ia32_vmx_entry_ctls_register entry_ctls{};
+		ia32_vmx_exit_ctls_register exit_ctls{};
+		ia32_vmx_basic_register vmx_basic{ __readmsr(IA32_VMX_BASIC) };
 
-		vmx_basic.flags = __readmsr(IA32_VMX_BASIC);
-		pinbased_ctls.flags = NULL;
-		procbased_ctls.flags = NULL;
-		procbased_ctls2.flags = NULL;
-		entry_ctls.flags = NULL;
-		exit_ctls.flags = NULL;
+		pinbased_ctls.nmi_exiting = true;
+		pinbased_ctls.virtual_nmi = true;
+
+		procbased_ctls.activate_secondary_controls = true;
+		exit_ctls.host_address_space_size = true;
+
+		entry_ctls.ia32e_mode_guest = true;
+		entry_ctls.conceal_vmx_from_pt = true;
+
+		procbased_ctls2.enable_rdtscp = true;
+		procbased_ctls2.enable_xsaves = true;
+		procbased_ctls2.conceal_vmx_from_pt = true;
 
 		if (vmx_basic.vmx_controls)
 		{
 			msr_fix_value.flags = __readmsr(IA32_VMX_TRUE_PINBASED_CTLS);
-			pinbased_ctls.nmi_exiting = true;
 			pinbased_ctls.flags &= msr_fix_value.allowed_1_settings;
 			pinbased_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_TRUE_PROCBASED_CTLS);
-			procbased_ctls.activate_secondary_controls = true;
 			procbased_ctls.flags &= msr_fix_value.allowed_1_settings;
 			procbased_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_TRUE_ENTRY_CTLS);
-			entry_ctls.ia32e_mode_guest = true;
-			entry_ctls.conceal_vmx_from_pt = true;
 			entry_ctls.flags &= msr_fix_value.allowed_1_settings;
 			entry_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_CONTROLS, entry_ctls.flags);
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_TRUE_EXIT_CTLS);
-			exit_ctls.host_address_space_size = true;
 			exit_ctls.flags &= msr_fix_value.allowed_1_settings;
 			exit_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_VMEXIT_CONTROLS, exit_ctls.flags);
@@ -189,36 +190,27 @@ namespace vmcs
 		else
 		{
 			msr_fix_value.flags = __readmsr(IA32_VMX_PINBASED_CTLS);
-			pinbased_ctls.nmi_exiting = true;
 			pinbased_ctls.flags &= msr_fix_value.allowed_1_settings;
 			pinbased_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_PROCBASED_CTLS);
-			procbased_ctls.activate_secondary_controls = true;
 			procbased_ctls.flags &= msr_fix_value.allowed_1_settings;
 			procbased_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_ENTRY_CTLS);
-			entry_ctls.ia32e_mode_guest = true;
-			entry_ctls.conceal_vmx_from_pt = true;
 			entry_ctls.flags &= msr_fix_value.allowed_1_settings;
 			entry_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_CONTROLS, entry_ctls.flags);
 
 			msr_fix_value.flags = __readmsr(IA32_VMX_EXIT_CTLS);
-			exit_ctls.host_address_space_size = true;
-			exit_ctls.conceal_vmx_from_pt = true;
 			exit_ctls.flags &= msr_fix_value.allowed_1_settings;
 			exit_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_VMEXIT_CONTROLS, exit_ctls.flags);
 		}
 
 		msr_fix_value.flags = __readmsr(IA32_VMX_PROCBASED_CTLS2);
-		procbased_ctls2.enable_rdtscp = true;
-		procbased_ctls2.enable_xsaves = true;
-		procbased_ctls2.conceal_vmx_from_pt = true; 
 		procbased_ctls2.flags &= msr_fix_value.allowed_1_settings;
 		procbased_ctls2.flags |= msr_fix_value.allowed_0_settings;
 		__vmx_vmwrite(VMCS_CTRL_SECONDARY_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls2.flags);

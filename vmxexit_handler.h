@@ -60,6 +60,7 @@ typedef struct _vmcall_command_t
 } vmcall_command_t, * pvmcall_command_t;
 
 extern "C" auto vmxexit_handler() -> void;
+extern "C" auto vmresume_failure() -> void;
 extern "C" auto exit_handler(hv::pguest_registers regs) -> void;
 
 auto get_command(u64 dirbase, u64 command_ptr) -> vmcall_command_t;
