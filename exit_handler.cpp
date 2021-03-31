@@ -39,6 +39,44 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		regs->rdx = result[3];
 		break;
 	}
+	case VMX_EXIT_REASON_NMI_WINDOW:
+	{
+		vmentry_interrupt_information interrupt{};
+		interrupt.interruption_type = interruption_type::non_maskable_interrupt;
+		interrupt.vector = EXCEPTION_NMI;
+		interrupt.valid = true;
+
+		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
+		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
+
+		ia32_vmx_procbased_ctls_register procbased_ctls;
+		ia32_vmx_pinbased_ctls_register pinbased_ctls;
+
+		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
+		__vmx_vmread(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, &pinbased_ctls.flags);
+
+		procbased_ctls.nmi_window_exiting = false;
+		pinbased_ctls.virtual_nmi = false;
+
+		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
+		__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
+		return; // dont advance rip...
+	}
+	case VMX_EXIT_REASON_EXCEPTION_OR_NMI:
+	{
+		ia32_vmx_procbased_ctls_register procbased_ctls;
+		ia32_vmx_pinbased_ctls_register pinbased_ctls;
+
+		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
+		__vmx_vmread(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, &pinbased_ctls.flags);
+
+		procbased_ctls.nmi_window_exiting = true;
+		pinbased_ctls.virtual_nmi = true;
+
+		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
+		__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
+		return; // dont advance rip...
+	}
 	case VMX_EXIT_REASON_EXECUTE_XSETBV:
 	{
 		hv::msr_split value{};
@@ -65,9 +103,11 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::hardware_exception;
+			interrupt.interruption_type = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
+
 			interrupt.valid = true;
+			interrupt.deliver_error_code = true;
 
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
@@ -94,9 +134,11 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::hardware_exception;
+			interrupt.interruption_type = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
+
 			interrupt.valid = true;
+			interrupt.deliver_error_code = true;
 
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
@@ -111,21 +153,23 @@ auto exit_handler(hv::pguest_registers regs) -> void
 
 		__try
 		{
-			__writemsr(regs->rcx, value.value);
-			break;
-		}
-		__except (EXCEPTION_EXECUTE_HANDLER)
-		{
 			/*
 				EXCEPTION WARNING:
 				#GP(0)	If the current privilege level is not 0.
 						If the value in ECX specifies a reserved or unimplemented MSR address.
 				#UD	If the LOCK prefix is used.
 			*/
+			__writemsr(regs->rcx, value.value);
+			break;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::hardware_exception;
+			interrupt.interruption_type = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_GP_FAULT;
+
 			interrupt.valid = true;
+			interrupt.deliver_error_code = true;
 
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
@@ -213,7 +257,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		else
 		{
 			vmentry_interrupt_information interrupt{};
-			interrupt.flags = interruption_type::hardware_exception;
+			interrupt.interruption_type = interruption_type::hardware_exception;
 			interrupt.vector = EXCEPTION_INVALID_OPCODE;
 			interrupt.valid = true;
 
@@ -232,12 +276,11 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	case VMX_EXIT_REASON_EXECUTE_VMXON:
 	{
 		vmentry_interrupt_information interrupt{};
-		interrupt.flags = interruption_type::hardware_exception;
+		interrupt.interruption_type = interruption_type::hardware_exception;
 		interrupt.vector = EXCEPTION_INVALID_OPCODE;
 		interrupt.valid = true;
 
 		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-		// manual says there will never be an error code... so just put null...
 		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
 		return; // dont advance rip...
 	}

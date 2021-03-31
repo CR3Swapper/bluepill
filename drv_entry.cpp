@@ -46,10 +46,21 @@ auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> N
 	// copy the guest IDT entries...
 	memcpy(idt::table, (void*)idt_value.base_address, idt_value.limit);
 
-	// change gp, pf, and de to vmxroot handlers...
-	idt::table[general_protection] = idt::create_entry(hv::idt_addr_t{ __gp_handler }, idt::ist_idx::gp);
-	idt::table[page_fault] = idt::create_entry(hv::idt_addr_t{ __pf_handler }, idt::ist_idx::pf);
-	idt::table[divide_error] = idt::create_entry(hv::idt_addr_t{ __de_handler }, idt::ist_idx::de);
+	idt::table[general_protection] = 
+		idt::create_entry(hv::idt_addr_t
+			{ __gp_handler }, idt::ist_idx::gp);
+
+	idt::table[page_fault] = 
+		idt::create_entry(hv::idt_addr_t
+			{ __pf_handler }, idt::ist_idx::pf);
+
+	idt::table[divide_error] = 
+		idt::create_entry(hv::idt_addr_t
+			{ __de_handler }, idt::ist_idx::de);
+
+	idt::table[non_maskable_interrupt] = 
+		idt::create_entry(hv::idt_addr_t
+			{ __nmi_handler }, idt::ist_idx::nmi);
 
 	// used for SEH in vmxroot fault handler...
 	idt::image_base = driver_object->DriverStart;
