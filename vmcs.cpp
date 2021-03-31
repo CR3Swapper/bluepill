@@ -162,6 +162,7 @@ namespace vmcs
 		if (vmx_basic.vmx_controls)
 		{
 			msr_fix_value.flags = __readmsr(IA32_VMX_TRUE_PINBASED_CTLS);
+			pinbased_ctls.nmi_exiting = true;
 			pinbased_ctls.flags &= msr_fix_value.allowed_1_settings;
 			pinbased_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
@@ -188,6 +189,7 @@ namespace vmcs
 		else
 		{
 			msr_fix_value.flags = __readmsr(IA32_VMX_PINBASED_CTLS);
+			pinbased_ctls.nmi_exiting = true;
 			pinbased_ctls.flags &= msr_fix_value.allowed_1_settings;
 			pinbased_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);

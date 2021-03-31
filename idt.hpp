@@ -12,6 +12,7 @@ extern "C" void __nmi_handler(void);
 
 extern "C" void nmi_handler(hv::pidt_regs_t regs);
 extern "C" void seh_handler(hv::pidt_regs_t regs);
+extern "C" void seh_handler_ecode(hv::pidt_regs_ecode_t regs);
 
 namespace idt
 {

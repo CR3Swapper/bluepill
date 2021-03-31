@@ -253,7 +253,7 @@ namespace hv
 		u64 rax;
 	} guest_registers, * pguest_registers;
 
-	typedef struct _idt_regs_t
+	typedef struct _idt_regs_ecode_t
 	{
 		u64 r15;
 		u64 r14;
@@ -277,7 +277,32 @@ namespace hv
 		::rflags rflags;
 		u64 rsp;
 		u64 ss_selector;
-	} idt_regs_t, *pidt_regs_t;
+	} idt_regs_ecode_t, *pidt_regs_ecode_t;
+
+	typedef struct _idt_regs_t
+	{
+		u64 r15;
+		u64 r14;
+		u64 r13;
+		u64 r12;
+		u64 r11;
+		u64 r10;
+		u64 r9;
+		u64 r8;
+		u64 rbp;
+		u64 rdi;
+		u64 rsi;
+		u64 rdx;
+		u64 rcx;
+		u64 rbx;
+		u64 rax;
+
+		u64 rip;
+		u64 cs_selector;
+		::rflags rflags;
+		u64 rsp;
+		u64 ss_selector;
+	} idt_regs_t, * pidt_regs_t;
 
 	union msr_split
 	{
@@ -657,8 +682,9 @@ namespace hv
 		u64 vmcs_phys;
 		u64 vmxon_phys;
 		u64 host_stack;
+
 		u64 error_code;
-		u8 nmi_counter;
+		u64 nmi_code;
 
 		tss64 tss;
 		segment_descriptor_64* gdt;
