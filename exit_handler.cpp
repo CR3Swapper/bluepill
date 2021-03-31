@@ -22,6 +22,13 @@ auto set_command(u64 dirbase, u64 command_ptr, const vmcall_command_t& vmcall_co
 	*reinterpret_cast<pvmcall_command_t>(virt_map) = vmcall_command;
 }
 
+auto vmresume_failure() -> void
+{
+	size_t value;
+	__vmx_vmread(VMCS_VM_INSTRUCTION_ERROR, &value);
+	__debugbreak();
+}
+
 auto exit_handler(hv::pguest_registers regs) -> void
 {
 	u64 exit_reason;
@@ -50,31 +57,19 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
 
 		ia32_vmx_procbased_ctls_register procbased_ctls;
-		ia32_vmx_pinbased_ctls_register pinbased_ctls;
-
 		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
-		__vmx_vmread(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, &pinbased_ctls.flags);
 
 		procbased_ctls.nmi_window_exiting = false;
-		pinbased_ctls.virtual_nmi = false;
-
 		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
-		__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
 		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXCEPTION_OR_NMI:
 	{
 		ia32_vmx_procbased_ctls_register procbased_ctls;
-		ia32_vmx_pinbased_ctls_register pinbased_ctls;
-
 		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
-		__vmx_vmread(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, &pinbased_ctls.flags);
 
 		procbased_ctls.nmi_window_exiting = true;
-		pinbased_ctls.virtual_nmi = true;
-
 		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
-		__vmx_vmwrite(VMCS_CTRL_PIN_BASED_VM_EXECUTION_CONTROLS, pinbased_ctls.flags);
 		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_XSETBV:

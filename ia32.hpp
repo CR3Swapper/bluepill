@@ -10444,6 +10444,7 @@ typedef union
 #define IA32_VMX_EXIT_CTLS                                           0x00000483
 typedef union
 {
+    uint64_t flags;
     struct
     {
         uint64_t reserved1 : 2;
@@ -10581,8 +10582,6 @@ typedef union
 #define IA32_VMX_EXIT_CTLS_CONCEAL_VMX_FROM_PT(_)                    (((_) >> 24) & 0x01)
         uint64_t reserved6 : 39;
     };
-
-    uint64_t flags;
 } ia32_vmx_exit_ctls_register;
 
 

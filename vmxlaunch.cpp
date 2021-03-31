@@ -33,10 +33,15 @@ auto vmxlaunch::init_vmcs(cr3 cr3_value) -> void
 		reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
 			PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
 
-	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_upper = tss.upper;
-	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_high = tss.high;
-	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_middle = tss.middle;
-	vcpu->gdt[segment_selector{ readtr() }.idx].base_address_low = tss.low;
+	vcpu->tss.interrupt_stack_table[idt::ist_idx::nmi] =
+		reinterpret_cast<u64>(ExAllocatePool(NonPagedPool,
+			PAGE_SIZE * HOST_STACK_PAGES)) + (PAGE_SIZE * HOST_STACK_PAGES);
+
+	const auto tr_idx = segment_selector{ readtr() }.idx;
+	vcpu->gdt[tr_idx].base_address_upper = tss.upper;
+	vcpu->gdt[tr_idx].base_address_high = tss.high;
+	vcpu->gdt[tr_idx].base_address_middle = tss.middle;
+	vcpu->gdt[tr_idx].base_address_low = tss.low;
 
 	vmcs::setup_host(&vmxexit_handler, 
 		vcpu->host_stack, cr3_value, (u64)vcpu->gdt);
@@ -48,9 +53,6 @@ auto vmxlaunch::init_vmcs(cr3 cr3_value) -> void
 auto vmxlaunch::launch() -> void
 {
 	const auto vmlaunch_result = vmxlaunch_processor();
-	DBG_PRINT("vmxlaunch for processor: %d\n", KeGetCurrentProcessorNumber());
-	DBG_PRINT("		- vmxlaunch result: 0x%x\n", vmlaunch_result);
-
 	if (vmlaunch_result != VMX_LAUNCH_SUCCESS)
 	{
 		u64 vmxerror;
