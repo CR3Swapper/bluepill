@@ -18,6 +18,7 @@ using s64 = long long;
 // didnt find it in intrin.h... ?
 extern "C" void _sgdt(void*);
 #pragma intrinsic(_sgdt);
+#define MAX_CORE_COUNT 64
 
 #ifdef DBG_PRINT_BOOL
 #define DBG_PRINT(format, ...) \
@@ -345,10 +346,12 @@ namespace hv
 
 	typedef struct _tss64
 	{
-		u32 reserved;
+		u32 reserved0;
 		u64 privilege_stacks[3];
+
+		// 0 is not used... 0 is reserved...
+		u64 interrupt_stack_table[8];
 		u64 reserved_1;
-		u64 interrupt_stack_table[7];
 		u16 reserved_2;
 		u16 iomap_base;
 	} tss64, *ptss64;
@@ -677,23 +680,22 @@ namespace hv
 
 	typedef struct _vcpu_ctx
 	{
-		pvmxon_region_ctx vmxon;
-		pvmcs_ctx vmcs;
+		__declspec(align(PAGE_SIZE)) vmxon_region_ctx vmxon;
+		__declspec(align(PAGE_SIZE)) vmcs_ctx vmcs;
+		__declspec(align(16)) u8 host_stack[HOST_STACK_PAGES];
+		segment_descriptor_64 gdt[8192];
+		tss64 tss;
+
 		u64 vmcs_phys;
 		u64 vmxon_phys;
-		u64 host_stack;
-
 		u64 error_code;
 		u64 nmi_code;
-
-		tss64 tss;
-		segment_descriptor_64* gdt;
 	} vcpu_ctx, * pvcpu_ctx;
 
 	typedef struct _vmx_ctx
 	{
 		u32 vcpu_count;
-		pvcpu_ctx* vcpus;
+		vcpu_ctx vcpus[MAX_CORE_COUNT];
 	} vmx_ctx, *pvmx_ctx;
 
 	typedef struct _segment_info_ctx

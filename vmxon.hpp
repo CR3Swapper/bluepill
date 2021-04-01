@@ -1,5 +1,6 @@
 #pragma once
 #include "hv_types.hpp"
+#pragma section(".vcpu", read, write)
 
 inline auto get_cpu_num() -> u32
 {
@@ -12,7 +13,7 @@ inline auto get_cpu_num() -> u32
 }
 
 #define g_vcpu \
-	vmxon::g_vmx_ctx->vcpus[get_cpu_num()]
+	vmxon::g_vmx_ctx.vcpus[get_cpu_num()]
 
 namespace vmxon
 {
@@ -22,5 +23,5 @@ namespace vmxon
 	auto init_vmxon() -> void;
 
 	// vmxroot global object... contains all vcpu information...
-	inline hv::pvmx_ctx g_vmx_ctx;
+	__declspec(allocate(".vcpu")) inline hv::vmx_ctx g_vmx_ctx;
 }

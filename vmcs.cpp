@@ -164,6 +164,7 @@ namespace vmcs
 		procbased_ctls2.enable_rdtscp = true;
 		procbased_ctls2.enable_xsaves = true;
 		procbased_ctls2.conceal_vmx_from_pt = true;
+		//procbased_ctls2.enable_ept = true;
 
 		if (vmx_basic.vmx_controls)
 		{
@@ -209,6 +210,13 @@ namespace vmcs
 			exit_ctls.flags |= msr_fix_value.allowed_0_settings;
 			__vmx_vmwrite(VMCS_CTRL_VMEXIT_CONTROLS, exit_ctls.flags);
 		}
+
+		/*ept_pointer eptp{};
+		eptp.memory_type = MEMORY_TYPE_WRITE_BACK;
+		eptp.enable_access_and_dirty_flags = true;
+		eptp.page_walk_length = EPT_PAGE_WALK_LENGTH_4;
+		eptp.page_frame_number = reinterpret_cast<u64>(&mm::epml4) >> 12;
+		__vmx_vmwrite(VMCS_CTRL_EPT_POINTER, eptp.flags);*/
 
 		msr_fix_value.flags = __readmsr(IA32_VMX_PROCBASED_CTLS2);
 		procbased_ctls2.flags &= msr_fix_value.allowed_1_settings;

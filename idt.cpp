@@ -3,7 +3,7 @@
 
 auto seh_handler_ecode(hv::pidt_regs_ecode_t regs) -> void
 {
-    g_vcpu->error_code = regs->error_code;
+    g_vcpu.error_code = regs->error_code;
     const auto rva = regs->rip - reinterpret_cast<u64>(idt::image_base);
     const auto nt_headers = reinterpret_cast<IMAGE_NT_HEADERS64*>(
         reinterpret_cast<u64>(idt::image_base) + 
@@ -93,7 +93,7 @@ auto seh_handler(hv::pidt_regs_t regs) -> void
     }
 }
 
-auto nmi_handler(hv::pidt_regs_t regs) -> void
+auto nmi_handler() -> void
 {
     ia32_vmx_procbased_ctls_register procbased_ctls;
     __vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);

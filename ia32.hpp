@@ -18137,6 +18137,7 @@ typedef struct
   */
 typedef union
 {
+    uint64_t flags;
     struct
     {
         /**
@@ -18187,8 +18188,6 @@ typedef union
 #define EPT_POINTER_PAGE_FRAME_NUMBER(_)                             (((_) >> 12) & 0xFFFFFFFFF)
         uint64_t reserved2 : 16;
     };
-
-    uint64_t flags;
 } ept_pointer;
 
 /**

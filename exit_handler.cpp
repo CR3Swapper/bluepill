@@ -46,6 +46,8 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		regs->rdx = result[3];
 		break;
 	}
+	// shouldnt get an exit when the LP is already executing an NMI...
+	// so it should be safe to inject an NMI here...
 	case VMX_EXIT_REASON_NMI_WINDOW:
 	{
 		vmentry_interrupt_information interrupt{};
@@ -56,6 +58,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
 		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
 
+		// turn off NMI window exiting since we handled the NMI...
 		ia32_vmx_procbased_ctls_register procbased_ctls;
 		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
 
@@ -105,7 +108,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.deliver_error_code = true;
 
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu.error_code);
 		}
 		return; // dont advance rip...
 	}
@@ -136,7 +139,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.deliver_error_code = true;
 
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu.error_code);
 		}
 		return; // dont advance rip...
 	}
@@ -167,7 +170,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			interrupt.deliver_error_code = true;
 
 			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu->error_code);
+			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu.error_code);
 		}
 		return; // dont advance rip...
 	}

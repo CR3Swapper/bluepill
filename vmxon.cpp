@@ -10,17 +10,11 @@ namespace vmxon
 		hv::vmx_basic_msr_t vmx_basic;
 		vmx_basic.control = __readmsr(IA32_VMX_BASIC);
 
-		vcpu_ctx->vmxon =
-			reinterpret_cast<hv::pvmxon_region_ctx>(
-				MmAllocateContiguousMemory(PAGE_SIZE, mem_range));
-
 		vcpu_ctx->vmxon_phys =
-			MmGetPhysicalAddress(vcpu_ctx->vmxon).QuadPart;
+			MmGetPhysicalAddress(&vcpu_ctx->vmxon).QuadPart;
 
-		RtlSecureZeroMemory(
-			vcpu_ctx->vmxon, PAGE_SIZE);
-
-		vcpu_ctx->vmxon->header
+		vcpu_ctx->vmxon
+			.header
 			.bits
 			.revision_identifier =
 				vmx_basic.bits
@@ -35,17 +29,11 @@ namespace vmxon
 		hv::vmx_basic_msr_t vmx_basic;
 		vmx_basic.control = __readmsr(IA32_VMX_BASIC);
 
-		vcpu_ctx->vmcs =
-			reinterpret_cast<hv::pvmcs_ctx>(
-				MmAllocateContiguousMemory(PAGE_SIZE, mem_range));
-
 		vcpu_ctx->vmcs_phys =
-			MmGetPhysicalAddress(vcpu_ctx->vmcs).QuadPart;
+			MmGetPhysicalAddress(&vcpu_ctx->vmcs).QuadPart;
 
-		RtlSecureZeroMemory(
-			vcpu_ctx->vmcs, PAGE_SIZE);
-
-		vcpu_ctx->vmcs->header
+		vcpu_ctx->vmcs
+			.header
 			.bits
 			.revision_identifier =
 				vmx_basic.bits
@@ -58,31 +46,10 @@ namespace vmxon
 			KeQueryActiveProcessorCountEx(
 				ALL_PROCESSOR_GROUPS);
 
-		vmx_ctx->vcpus = 
-			reinterpret_cast<hv::pvcpu_ctx*>(
-				ExAllocatePool(NonPagedPool, 
-					sizeof(hv::pvcpu_ctx) * vmx_ctx->vcpu_count));
-
-		for (auto idx = 0u; idx < g_vmx_ctx->vcpu_count; ++idx)
+		for (auto idx = 0u; idx < vmx_ctx->vcpu_count; ++idx)
 		{
-			vmx_ctx->vcpus[idx] =
-				reinterpret_cast<hv::pvcpu_ctx>(
-					ExAllocatePool(NonPagedPool, sizeof hv::vcpu_ctx));
-
-			vmx_ctx->vcpus[idx]->host_stack = 
-				reinterpret_cast<u64>(
-					ExAllocatePool(NonPagedPool,
-						PAGE_SIZE * HOST_STACK_PAGES));
-
-			vmx_ctx->vcpus[idx]->gdt = 
-				reinterpret_cast<segment_descriptor_64*>(
-					ExAllocatePool(NonPagedPool, PAGE_SIZE));
-
-			RtlZeroMemory(reinterpret_cast<void*>(
-				vmx_ctx->vcpus[idx]->host_stack), PAGE_SIZE * HOST_STACK_PAGES);
-
-			create_vmxon_region(vmx_ctx->vcpus[idx]);
-			create_vmcs(vmx_ctx->vcpus[idx]);
+			create_vmxon_region(&vmx_ctx->vcpus[idx]);
+			create_vmcs(&vmx_ctx->vcpus[idx]);
 		}
 	}
 
@@ -108,7 +75,7 @@ namespace vmxon
 
 		const auto vmxon_result = 
 			__vmx_on((unsigned long long*)
-				&vmxon::g_vmx_ctx->vcpus[
-					KeGetCurrentProcessorNumber()]->vmxon_phys);
+				&vmxon::g_vmx_ctx.vcpus[
+					KeGetCurrentProcessorNumber()].vmxon_phys);
 	}
 }
