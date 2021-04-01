@@ -4,8 +4,29 @@
 #define PML4_SELF_REF 255
 #pragma section(".pml4", read, write)
 
+#pragma section(".epml4", read, write)
+#pragma section(".epdpt", read, write)
+
+#pragma section(".epd", read, write)
+#pragma section(".ept", read, write) 
+
 namespace mm
 {
+    using epml4_t = ept_pml4[512];
+    using ept_t = epte[512];
+
+    using epdpt_t = union
+    {
+        epdpte entry_4kb[512];
+        epdpte_1gb entry_1gb[512];
+    };
+
+    using epd_t = union
+    {
+        epde entry_4kb[512];
+        epde_2mb entry_2mb[512];
+    };
+
     typedef union _virt_addr_t
     {
         u64 value;
@@ -127,9 +148,13 @@ namespace mm
 
     enum class map_type{ dest, src };
     inline const ppml4e vmxroot_pml4 = reinterpret_cast<ppml4e>(0x7fbfdfeff000);
-
-    // make sure this is 4kb aligned or you are going to be meeting allah...
     __declspec(allocate(".pml4")) inline pml4e pml4[512];
+
+    __declspec(allocate(".epml4")) inline epml4_t epml4;
+    __declspec(allocate(".epdpt")) inline epdpt_t epdpt[64];
+
+    __declspec(allocate(".epd")) inline epd_t epd[128];
+    __declspec(allocate(".ept")) inline ept_t ept[256];
 
     // translate vmxroot address's...
     auto translate(virt_addr_t virt_addr) -> u64;

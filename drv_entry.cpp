@@ -3,12 +3,10 @@
 
 auto drv_entry(PDRIVER_OBJECT driver_object, PUNICODE_STRING registry_path) -> NTSTATUS
 {
-	vmxon::g_vmx_ctx = 
-		reinterpret_cast<hv::pvmx_ctx>(
-			ExAllocatePool(NonPagedPool, sizeof hv::vmx_ctx));
+	UNREFERENCED_PARAMETER(registry_path);
 
 	// setup vcpu structures (vmx on region and vmcs...)
-	vmxon::create_vcpus(vmxon::g_vmx_ctx);
+	vmxon::create_vcpus(&vmxon::g_vmx_ctx);
 
 	cr3 cr3_value;
 	cr3_value.flags = __readcr3();

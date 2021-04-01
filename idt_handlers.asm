@@ -20,7 +20,6 @@ __nmi_handler proc
 	push r14
 	push r15
 
-	mov rcx, rsp
 	sub rsp, 20h
 	call nmi_handler
 	add rsp, 20h
@@ -125,7 +124,7 @@ __gp_handler proc
 	pop rcx
 	pop rbx
 	pop rax
-	add rsp, 8	; remove exception code on the stack...
+	add rsp, 8	; remove error code on the stack...
 
 	iretq
 __gp_handler endp
