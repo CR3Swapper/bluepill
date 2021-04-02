@@ -16605,6 +16605,7 @@ typedef struct
    */
 typedef union
 {
+    uint64_t flags;
     struct
     {
         /**
@@ -16644,8 +16645,6 @@ typedef union
 #define VMX_EXIT_QUALIFICATION_DEBUG_EXCEPTION_SINGLE_INSTRUCTION(_) (((_) >> 14) & 0x01)
         uint64_t reserved2 : 49;
     };
-
-    uint64_t flags;
 } vmx_exit_qualification_debug_exception;
 
 /**

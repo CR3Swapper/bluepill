@@ -1,32 +1,10 @@
 #include "vmxexit_handler.h"
 
-auto get_command(u64 dirbase, u64 command_ptr) -> vmcall_command_t
-{
-	const auto virt_map =
-		mm::map_virt(dirbase, command_ptr);
-
-	if (!virt_map)
-		return {};
-
-	return *reinterpret_cast<pvmcall_command_t>(virt_map);
-}
-
-auto set_command(u64 dirbase, u64 command_ptr, const vmcall_command_t& vmcall_command) -> void
-{
-	const auto virt_map = 
-		mm::map_virt(dirbase, command_ptr);
-
-	if (!virt_map)
-		return;
-
-	*reinterpret_cast<pvmcall_command_t>(virt_map) = vmcall_command;
-}
-
 auto vmresume_failure() -> void
 {
 	size_t value;
 	__vmx_vmread(VMCS_VM_INSTRUCTION_ERROR, &value);
-	__debugbreak();
+	dbg::print("> vmresume error... reason = 0x%x\n", value);
 }
 
 auto exit_handler(hv::pguest_registers regs) -> void
@@ -44,19 +22,13 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		regs->rbx = result[1];
 		regs->rcx = result[2];
 		regs->rdx = result[3];
-		break;
+		goto advance_rip;
 	}
 	// shouldnt get an exit when the LP is already executing an NMI...
 	// so it should be safe to inject an NMI here...
 	case VMX_EXIT_REASON_NMI_WINDOW:
 	{
-		vmentry_interrupt_information interrupt{};
-		interrupt.interruption_type = interruption_type::non_maskable_interrupt;
-		interrupt.vector = EXCEPTION_NMI;
-		interrupt.valid = true;
-
-		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
+		exception::injection(interruption_type::non_maskable_interrupt, EXCEPTION_NMI);
 
 		// turn off NMI window exiting since we handled the NMI...
 		ia32_vmx_procbased_ctls_register procbased_ctls;
@@ -64,16 +36,7 @@ auto exit_handler(hv::pguest_registers regs) -> void
 
 		procbased_ctls.nmi_window_exiting = false;
 		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
-		return; // dont advance rip...
-	}
-	case VMX_EXIT_REASON_EXCEPTION_OR_NMI:
-	{
-		ia32_vmx_procbased_ctls_register procbased_ctls;
-		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
-
-		procbased_ctls.nmi_window_exiting = true;
-		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
-		return; // dont advance rip...
+		goto dont_advance;
 	}
 	case VMX_EXIT_REASON_EXECUTE_XSETBV:
 	{
@@ -96,21 +59,14 @@ auto exit_handler(hv::pguest_registers regs) -> void
 						If the LOCK prefix is used.
 			*/
 			_xsetbv(regs->rcx, value.value);
-			break;
+			goto advance_rip;
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
-			vmentry_interrupt_information interrupt{};
-			interrupt.interruption_type = interruption_type::hardware_exception;
-			interrupt.vector = EXCEPTION_GP_FAULT;
-
-			interrupt.valid = true;
-			interrupt.deliver_error_code = true;
-
-			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu.error_code);
+			exception::injection(interruption_type::hardware_exception,
+				EXCEPTION_GP_FAULT, { true, g_vcpu.error_code });
+			goto dont_advance;
 		}
-		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_RDMSR:
 	{
@@ -127,21 +83,14 @@ auto exit_handler(hv::pguest_registers regs) -> void
 
 			regs->rdx = result.high;
 			regs->rax = result.low;
-			break;
+			goto advance_rip;
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
-			vmentry_interrupt_information interrupt{};
-			interrupt.interruption_type = interruption_type::hardware_exception;
-			interrupt.vector = EXCEPTION_GP_FAULT;
-
-			interrupt.valid = true;
-			interrupt.deliver_error_code = true;
-
-			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu.error_code);
+			exception::injection(interruption_type::hardware_exception,
+				EXCEPTION_GP_FAULT, { true, g_vcpu.error_code });
+			goto dont_advance;
 		}
-		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_WRMSR:
 	{
@@ -158,28 +107,19 @@ auto exit_handler(hv::pguest_registers regs) -> void
 				#UD	If the LOCK prefix is used.
 			*/
 			__writemsr(regs->rcx, value.value);
-			break;
+			goto advance_rip;
 		}
 		__except (EXCEPTION_EXECUTE_HANDLER)
 		{
-			vmentry_interrupt_information interrupt{};
-			interrupt.interruption_type = interruption_type::hardware_exception;
-			interrupt.vector = EXCEPTION_GP_FAULT;
-
-			interrupt.valid = true;
-			interrupt.deliver_error_code = true;
-
-			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, g_vcpu.error_code);
+			exception::injection(interruption_type::hardware_exception,
+				EXCEPTION_GP_FAULT, { true, g_vcpu.error_code });
+			goto dont_advance;
 		}
-		return; // dont advance rip...
 	}
 	case VMX_EXIT_REASON_EXECUTE_INVD:
 	{
-		// couldnt find the intrin for this so i just made one...
-		// probably could have used __wbinvd?
-		__invd();
-		break;
+		__wbinvd();
+		goto advance_rip;
 	}
 	case VMX_EXIT_REASON_EXECUTE_VMCALL:
 	{
@@ -188,82 +128,78 @@ auto exit_handler(hv::pguest_registers regs) -> void
 			cr3 dirbase;
 			__vmx_vmread(VMCS_GUEST_CR3, &dirbase.flags);
 
-			auto command = get_command(
+			auto command = command::get(
 				dirbase.pml4_pfn << 12, regs->rdx);
 
-			if (command.present)
+			if (!command.present)
 			{
-				switch (command.option)
-				{
-				case vmcall_option::copy_virt:
-				{
-					command.result = 
-						mm::copy_virt(
-							command.copy_virt.dirbase_src, 
-							command.copy_virt.virt_src, 
-							command.copy_virt.dirbase_dest, 
-							command.copy_virt.virt_dest, 
-							command.copy_virt.size);
-					break;
-				}
-				case vmcall_option::translate:
-				{
-					command.translate.phys_addr = 
-						mm::translate(mm::virt_addr_t{ 
-							command.translate.virt_addr }, 
-							command.translate.dirbase);
-
-					// true if address is not null...
-					command.result = command.translate.phys_addr;
-					break;
-				}
-				case vmcall_option::read_phys:
-				{
-					command.result = 
-						mm::read_phys(
-							command.read_phys.dirbase_dest, 
-							command.read_phys.phys_src, 
-							command.read_phys.virt_dest, 
-							command.read_phys.size);
-					break;
-				}
-				case vmcall_option::write_phys:
-				{
-					command.result = 
-						mm::write_phys(
-							command.write_phys.dirbase_src, 
-							command.write_phys.phys_dest, 
-							command.write_phys.virt_src, 
-							command.write_phys.size);
-					break;
-				}
-				case vmcall_option::dirbase:
-				{
-					command.result = true;
-					command.dirbase = dirbase.pml4_pfn << 12;
-					break;
-				}
-				default:
-					// check to see why the option was invalid...
-					__debugbreak();
-					break;
-				}
-
-				set_command(dirbase.pml4_pfn << 12, regs->rdx, command);
+				exception::injection(interruption_type::hardware_exception, EXCEPTION_INVALID_OPCODE);
+				goto dont_advance;
 			}
+
+			switch (command.option)
+			{
+			case command::vmcall_option::copy_virt:
+			{
+				command.result =
+					mm::copy_virt(
+						command.copy_virt.dirbase_src,
+						command.copy_virt.virt_src,
+						command.copy_virt.dirbase_dest,
+						command.copy_virt.virt_dest,
+						command.copy_virt.size);
+				break;
+			}
+			case command::vmcall_option::translate:
+			{
+				command.translate.phys_addr =
+					mm::translate(mm::virt_addr_t{
+						command.translate.virt_addr },
+						command.translate.dirbase);
+
+				// true if address is not null...
+				command.result = command.translate.phys_addr;
+				break;
+			}
+			case command::vmcall_option::read_phys:
+			{
+				command.result =
+					mm::read_phys(
+						command.read_phys.dirbase_dest,
+						command.read_phys.phys_src,
+						command.read_phys.virt_dest,
+						command.read_phys.size);
+				break;
+			}
+			case command::vmcall_option::write_phys:
+			{
+				command.result =
+					mm::write_phys(
+						command.write_phys.dirbase_src,
+						command.write_phys.phys_dest,
+						command.write_phys.virt_src,
+						command.write_phys.size);
+				break;
+			}
+			case command::vmcall_option::dirbase:
+			{
+				command.result = true;
+				command.dirbase = dirbase.pml4_pfn << 12;
+				break;
+			}
+			default:
+				// check to see why the option was invalid...
+				__debugbreak();
+			}
+
+			command::set(dirbase.pml4_pfn << 12, regs->rdx, command);
+			goto advance_rip;
 		}
 		else
 		{
-			vmentry_interrupt_information interrupt{};
-			interrupt.interruption_type = interruption_type::hardware_exception;
-			interrupt.vector = EXCEPTION_INVALID_OPCODE;
-			interrupt.valid = true;
-
-			__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-			__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
-			return; // dont advance rip...
+			exception::injection(interruption_type::hardware_exception, EXCEPTION_INVALID_OPCODE);
+			goto dont_advance;
 		}
-		break;
 	}
 	case VMX_EXIT_REASON_EXECUTE_VMWRITE:
 	case VMX_EXIT_REASON_EXECUTE_VMREAD:
@@ -272,24 +208,27 @@ auto exit_handler(hv::pguest_registers regs) -> void
 	case VMX_EXIT_REASON_EXECUTE_VMCLEAR:
 	case VMX_EXIT_REASON_EXECUTE_VMXOFF:
 	case VMX_EXIT_REASON_EXECUTE_VMXON:
+	case VMX_EXIT_REASON_EXECUTE_VMFUNC:
 	{
-		vmentry_interrupt_information interrupt{};
-		interrupt.interruption_type = interruption_type::hardware_exception;
-		interrupt.vector = EXCEPTION_INVALID_OPCODE;
-		interrupt.valid = true;
-
-		__vmx_vmwrite(VMCS_CTRL_VMENTRY_INTERRUPTION_INFORMATION_FIELD, interrupt.flags);
-		__vmx_vmwrite(VMCS_VMEXIT_INTERRUPTION_ERROR_CODE, NULL);
-		return; // dont advance rip...
+		exception::injection(interruption_type::hardware_exception, EXCEPTION_INVALID_OPCODE);
+		goto dont_advance;
 	}
 	default:
 		// TODO: check out the vmexit reason and add support for it...
 		__debugbreak();
-		break;
 	}
-
+	
+advance_rip:
 	size_t rip, exec_len;
 	__vmx_vmread(VMCS_GUEST_RIP, &rip);
 	__vmx_vmread(VMCS_VMEXIT_INSTRUCTION_LENGTH, &exec_len);
 	__vmx_vmwrite(VMCS_GUEST_RIP, rip + exec_len);
+
+	// since we are advancing RIP, also check if TF = 1, if so, set pending #DB...
+	// otherwise this #DB will fire on the wrong instruction... please refer to:
+	// https://howtohypervise.blogspot.com/2019/01/a-common-missight-in-most-hypervisors.html
+	exception::handle_debug();
+
+dont_advance:
+	return;
 }
