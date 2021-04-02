@@ -8638,6 +8638,10 @@ typedef union
 #define IA32_MTRR_PHYSBASE7                                          0x0000020E
 #define IA32_MTRR_PHYSBASE8                                          0x00000210
 #define IA32_MTRR_PHYSBASE9                                          0x00000212
+
+#define IA32_MTRR_PHYSBASEN(n) \
+        IA32_MTRR_PHYSBASE0 + (n * 2)
+
 /**
  * @}
  */
@@ -8697,7 +8701,7 @@ typedef union
 
     uint64_t flags;
 } ia32_mtrr_physmask_register;
-
+    
 #define IA32_MTRR_PHYSMASK0                                          0x00000201
 #define IA32_MTRR_PHYSMASK1                                          0x00000203
 #define IA32_MTRR_PHYSMASK2                                          0x00000205
@@ -8708,6 +8712,10 @@ typedef union
 #define IA32_MTRR_PHYSMASK7                                          0x0000020F
 #define IA32_MTRR_PHYSMASK8                                          0x00000211
 #define IA32_MTRR_PHYSMASK9                                          0x00000213
+
+#define IA32_MTRR_PHYSMASKN(n) \
+        IA32_MTRR_PHYSMASK0 + (n * 2)
+
 /**
  * @}
  */
