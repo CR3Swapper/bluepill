@@ -32,7 +32,19 @@ auto exit_handler(hv::pguest_registers regs) -> void
 		ia32_vmx_procbased_ctls_register procbased_ctls;
 		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
 
+		// if an NMI happens right here and my NMI handler sets nmi window exiting on...
+		// its going to be overwritten with off right here... sus...
+
 		procbased_ctls.nmi_window_exiting = false;
+		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
+		goto dont_advance;
+	}
+	case VMX_EXIT_REASON_EXCEPTION_OR_NMI:
+	{
+		ia32_vmx_procbased_ctls_register procbased_ctls;
+		__vmx_vmread(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, &procbased_ctls.flags);
+
+		procbased_ctls.nmi_window_exiting = true;
 		__vmx_vmwrite(VMCS_CTRL_PROCESSOR_BASED_VM_EXECUTION_CONTROLS, procbased_ctls.flags);
 		goto dont_advance;
 	}

@@ -689,7 +689,6 @@ namespace hv
 		u64 vmcs_phys;
 		u64 vmxon_phys;
 		u64 error_code;
-		u64 nmi_code;
 	} vcpu_ctx, * pvcpu_ctx;
 
 	typedef struct _vmx_ctx

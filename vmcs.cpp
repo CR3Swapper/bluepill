@@ -153,6 +153,8 @@ namespace vmcs
 		ia32_vmx_basic_register vmx_basic{ __readmsr(IA32_VMX_BASIC) };
 
 		pinbased_ctls.virtual_nmi = true;
+		pinbased_ctls.nmi_exiting = true;
+
 		procbased_ctls.activate_secondary_controls = true;
 		exit_ctls.host_address_space_size = true;
 
