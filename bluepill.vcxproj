@@ -85,8 +85,10 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="command.cpp" />
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="drv_entry.cpp" />
+    <ClCompile Include="exception.cpp" />
     <ClCompile Include="exit_handler.cpp" />
     <ClCompile Include="gdt.cpp" />
     <ClCompile Include="idt.cpp" />
@@ -96,11 +98,12 @@
     <ClCompile Include="vmxon.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="command.hpp" />
     <ClInclude Include="debug.hpp" />
+    <ClInclude Include="exception.hpp" />
     <ClInclude Include="gdt.hpp" />
     <ClInclude Include="ia32.hpp" />
     <ClInclude Include="idt.hpp" />
-    <ClInclude Include="invd.hpp" />
     <ClInclude Include="mm.hpp" />
     <ClInclude Include="segment_intrin.h" />
     <ClInclude Include="hv_types.hpp" />
@@ -111,7 +114,6 @@
   </ItemGroup>
   <ItemGroup>
     <MASM Include="idt_handlers.asm" />
-    <MASM Include="invd.asm" />
     <MASM Include="segment_intrin.asm" />
     <MASM Include="vmxexit_handler.asm" />
   </ItemGroup>

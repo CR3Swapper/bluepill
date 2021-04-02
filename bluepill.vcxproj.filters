@@ -38,6 +38,12 @@
     <ClCompile Include="gdt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="command.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="exception.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vmxon.hpp">
@@ -67,13 +73,16 @@
     <ClInclude Include="idt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="invd.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="debug.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gdt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="command.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exception.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -82,9 +91,6 @@
       <Filter>Source Files</Filter>
     </MASM>
     <MASM Include="vmxexit_handler.asm">
-      <Filter>Source Files</Filter>
-    </MASM>
-    <MASM Include="invd.asm">
       <Filter>Source Files</Filter>
     </MASM>
     <MASM Include="idt_handlers.asm">

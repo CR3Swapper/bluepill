@@ -101,6 +101,6 @@ vmxexit_handler proc
 
 	vmresume
 	call vmresume_failure
-	hlt
+	int 3
 vmxexit_handler endp
 end
