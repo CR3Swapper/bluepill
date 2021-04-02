@@ -44,6 +44,9 @@
     <ClCompile Include="exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="handlers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vmxon.hpp">
@@ -83,6 +86,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="exception.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="handlers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
