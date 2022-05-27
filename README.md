@@ -1,7 +1,7 @@
 # Bluepill - Type-2 Intel Hypervisor For Windows 10 Systems
 
 <div align="center">
-  <img width="1000" height="auto" src="https://githacks.org/_xeroxz/bluepill/-/raw/37484f6966c18eb371e819b32ef60334b98ea0b3/screenshots/firstvmexit.png"/>
+  <img width="1000" height="auto" src="https://git.back.engineering/_xeroxz/bluepill/raw/branch/master/screenshots/firstvmexit.png"/>
   <p>Figure 1. First ever vmexit...</p>
 </div>
 
@@ -207,7 +207,7 @@ the PTE mapping that page will not be used to map the `map_type::src` page.
 # Demo - VDM Integration, Physical/Virtual Memory Read/Write
 
 <div align="center">
-  <img width="1000" height="auto" src="https://githacks.org/_xeroxz/bluepill/-/raw/37484f6966c18eb371e819b32ef60334b98ea0b3/screenshots/demo.png"/>
+  <img width="1000" height="auto" src="https://git.back.engineering/_xeroxz/bluepill/raw/branch/master/screenshots/demo.png"/>
   <p>Figure 2. demo VDM example and read/write virtual memory...</p>
 </div>
 
